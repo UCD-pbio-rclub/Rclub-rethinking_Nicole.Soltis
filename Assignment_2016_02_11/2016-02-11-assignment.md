@@ -129,5 +129,9 @@ Pr(Twin again) = Pr(Twin|SpB)Pr(up SpB) + Pr(Twin|SpA)Pr(up SpA) = 0.20 x 0.66 +
 Pr(Sp A | Twin) = Pr(Twin|SpA)Pr(SpA)/Pr(Twin) = 0.10 x 0.5 / 0.15 = 0.33
 ## 2H3
 Pr(Sp A | Twin then singleton)
-## 2H4
 
+Pr(singleton after twin) = Pr(single|SpB)Pr(up SpB) + Pr(single|SpA)Pr(up SpA) = 0.80 x 0.66 + 0.90 x 0.33 = 0.825
+## 2H4
+Test positive for species A
+The probability it correctly identifies a species A panda is 0.8.
+The probability it correctly identifies a species B panda is 0.65.
