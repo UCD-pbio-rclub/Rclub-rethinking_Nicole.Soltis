@@ -96,9 +96,78 @@ img {
 </div>
 <div id="m4" class="section level2">
 <h2>2M4</h2>
-<p>Deck with 3 cards, 2 sides per card, B,W. card 1: B,B card 2: B,W card 3: W,W shuffle cards, draw black side</p>
-<p>Ways to draw black: 1Ba, 1Bb 1Bb, 1Ba 2B, W</p>
-<p>Answer: P(other side black| drew black) = 2/3 ** use counting method in 2.2</p>
+<p>Deck with 3 cards, 2 sides per card, B,W.</p>
+<p>card 1: B,B</p>
+<p>card 2: B,W</p>
+<p>card 3: W,W</p>
+<p>shuffle cards, draw black side</p>
+<p>Ways to draw black:</p>
+<p>1Ba, 1Bb</p>
+<p>1Bb, 1Ba</p>
+<p>2B, W</p>
+<p>Answer: Pr(other side black| drew black) = 2/3</p>
+</div>
+<div id="m5" class="section level2">
+<h2>2M5</h2>
+<p>B/B, B/W, W/W, B/B</p>
+<p>Ways to draw black:</p>
+<p>1Ba, 1Bb</p>
+<p>1Bb, 1Ba</p>
+<p>2B, W</p>
+<p>4Ba, 4Bb</p>
+<p>4Bb, 4Ba</p>
+<p>Answer: Pr(other side black| drew black) = 4/5</p>
+</div>
+<div id="m6" class="section level2">
+<h2>2M6</h2>
+<p>For every one way to pull a B/B card, there are 2 ways to pull a B/W card and 3 ways to pull a W/W card.</p>
+<p>Ways to draw black:</p>
+<p>1Ba, 1Bb (1/3)</p>
+<p>1Bb, 1Ba (1/3)</p>
+<p>2B, W (2/3)</p>
+<p>Pr (2nd side B | drew B) = (1/3) + (1/3) / (1/3) + (1/3) + (2/3) = 2/4</p>
+<p>Answer: Pr(other side black| drew black) = 0.5</p>
+</div>
+<div id="m7" class="section level2">
+<h2>2M7</h2>
+<p>Draw B card, draw W card.</p>
+<p>Cards: 1 BB, 2 BW, 3 WW</p>
+<p>1Ba, 1Bb, 2W</p>
+<p>1Bb, 1Ba, 2W</p>
+<p>1Ba, 1Bb, 3Wa</p>
+<p>1Bb, 1Ba, 3Wa</p>
+<p>1Ba, 1Bb, 3Wb</p>
+<p>1Bb, 1Ba, 3Wb</p>
+<p>2B, 2W, 3Wa</p>
+<p>2B, 2W, 3Wb</p>
+<p>Answer: Pr (2nd side B| drew B and drew W) = 6/8 = 0.75</p>
+</div>
+<div id="h1" class="section level2">
+<h2>2H1</h2>
+<p>Pr(Species A) = 0.5</p>
+<p>Pr(Sp B) = 0.5</p>
+<p>Pr(Twin|Sp A) = 0.10</p>
+<p>Pr(Twin|Sp B) = 0.20</p>
+<p>Pr(Twin) = Pr(Twin|SpA)Pr(SpA) + Pr(Twin|SpB)Pr(SpB) = 0.5 x 0.10 + 0.5 x 0.20 = 0.15</p>
+<p>Pr (Twins again | Twins now)</p>
+<p>Pr(Sp A | Twin) = Pr(Twin|SpA)Pr(SpA)/Pr(Twin) = 0.10 x 0.5 / 0.15 = 0.33 = Pr(update SpA)</p>
+<p>Pr(SpB|Twin) = Pr(Twin|SpB)Pr(SpB)/Pr(Twin) = 0.20 x 0.5 / 0.15 = 0.66 = Pr(up SpB)</p>
+<p>Pr(Twin again) = Pr(Twin|SpB)Pr(up SpB) + Pr(Twin|SpA)Pr(up SpA) = 0.20 x 0.66 + 0.10 x 0.33 = 0.132 + 0.033 = 0.165</p>
+</div>
+<div id="h2" class="section level2">
+<h2>2H2</h2>
+<p>Pr(Sp A | Twin) = Pr(Twin|SpA)Pr(SpA)/Pr(Twin) = 0.10 x 0.5 / 0.15 = 0.33</p>
+</div>
+<div id="h3" class="section level2">
+<h2>2H3</h2>
+<p>Pr(Sp A | Twin then singleton)</p>
+<p>Pr(singleton after twin) = Pr(single|SpB)Pr(up SpB) + Pr(single|SpA)Pr(up SpA) = 0.80 x 0.66 + 0.90 x 0.33 = 0.825</p>
+</div>
+<div id="h4" class="section level2">
+<h2>2H4</h2>
+<p>Test positive for species A</p>
+<p>The probability it correctly identifies a species A panda is 0.8.</p>
+<p>The probability it correctly identifies a species B panda is 0.65.</p>
 </div>
 </div>
 
