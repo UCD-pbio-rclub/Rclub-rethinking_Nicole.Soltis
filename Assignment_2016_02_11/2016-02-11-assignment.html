@@ -84,6 +84,21 @@ img {
 <h2>2E4</h2>
 <p>In reality, the globe has a set proportion of water, with complete certainty. But when an observer wants to predict the presence or absence of water based on a small sample of points on the globe, probability describes the uncertainty in whether water is expected for a random sample or not.</p>
 </div>
+<div id="m1" class="section level2">
+<h2>2M1</h2>
+<p>WWW</p>
+<pre class="{r}"><code>p_grid &lt;- seq( from=0 , to=1 , length.out=20 )
+prior &lt;- rep( 1 , 20 ) #how many times to repeat
+likelihood &lt;- dbinom( 3 , size=3 , prob=p_grid )
+plot(p_grid, likelihood)
+unstd.posterior &lt;- likelihood * prior #r interprets this for you
+posterior &lt;- unstd.posterior / sum(unstd.posterior)
+plot(p_grid, posterior, type=&quot;b&quot;)</code></pre>
+<p>p_grid &lt;- seq( from=0 , to=1 , length.out=20 ) prior &lt;- rep( 1 , 20 ) #how many times to repeat likelihood &lt;- dbinom( 3 , size=3 , prob=p_grid ) plot(p_grid, likelihood) unstd.posterior &lt;- likelihood * prior #r interprets this for you posterior &lt;- unstd.posterior / sum(unstd.posterior) plot(p_grid, posterior, type=“b”)</p>
+</div>
+<div id="m2" class="section level2">
+<h2>2M2</h2>
+</div>
 <div id="m3" class="section level2">
 <h2>2M3</h2>
 <p>Pr(Earth) = 0.5</p>
@@ -156,7 +171,8 @@ img {
 </div>
 <div id="h2" class="section level2">
 <h2>2H2</h2>
-<p>Pr(Sp A | Twin) = Pr(Twin|SpA)Pr(SpA)/Pr(Twin) = 0.10 x 0.5 / 0.15 = 0.33</p>
+<p>Pr(Sp A | Twin) = Pr(Twin|SpA)Pr(SpA)/Pr(Twin) = 0.10 x 0.5 / 0.15 = 33.33</p>
+<p>(10*0.5)/(.15)</p>
 </div>
 <div id="h3" class="section level2">
 <h2>2H3</h2>

@@ -1,0 +1,17 @@
+Class notes 02/18/16
+discussing chapter 2.4
+
+Posterior probability: want to figure out what the curve looks like of Pr (y axis) vs. Pr(water) (x axis from 0 to 1)
+Shape of curve matters vs. just peak of curve (Frequentist statistics looks for most probable parameter estimate only)
+
+2.4.1 Grid approximation -- plug and chug! Try a sequence of numbers for your parameter
+	MCMC is much like this, but SUBSAMPLES the parameter space
+
+2.4.2 Quadratic approximation -- try to approximate the function
+
+2.4.3 MCMC -- don't know shape of function or parameter space is too extensive
+	random sampling with updating within parameter space
+	spend more time sampling in the more interesting space
+	computationally intensive --> recent increase in useage
+
+

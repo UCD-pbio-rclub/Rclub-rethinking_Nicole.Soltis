@@ -24,3 +24,4 @@ precis( globe.qa )
 
 #2.5
 dbinom( 6 , prob=2 , size=9 )
+
