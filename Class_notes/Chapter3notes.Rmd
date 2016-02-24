@@ -1,0 +1,28 @@
+---
+title: "Chapter3notes"
+author: "Nicole E Soltis"
+date: "February 19, 2016"
+output: html_document
+---
+##Example 3.1
+
+PrPV <- 0.95
+
+PrPM <- 0.01
+
+PrV <- 0.001
+
+PrP <- PrPV*PrV + PrPM*(1-PrV)
+
+( PrVP <- PrPV*PrV / PrP )
+
+
+```{r}
+summary(cars)
+```
+
+You can also embed plots, for example:
+
+```{r, echo=FALSE}
+plot(cars)
+```
