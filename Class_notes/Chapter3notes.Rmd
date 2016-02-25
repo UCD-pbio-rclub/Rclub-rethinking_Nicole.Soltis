@@ -16,7 +16,83 @@ PrP <- PrPV*PrV + PrPM*(1-PrV)
 
 ( PrVP <- PrPV*PrV / PrP )
 
+## 3.2
 
+p_grid <- seq( from=0 , to=1 , length.out=1000 )
+
+prior <- rep( 1 , 1000 )
+
+likelihood <- dbinom( 6 , size=9 , prob=p_grid )
+
+posterior <- likelihood * prior
+
+posterior <- posterior / sum(posterior)
+
+## 3.3 random sampling with replacement from the vector p_grid
+samples <- sample( p_grid , prob=posterior , size=1e4 , replace=TRUE )
+
+## 3.4
+plot(samples)
+
+## 3.5
+library(rethinking)
+
+dens(samples)
+
+## 3.6
+/#add up posterior probability where p < 0.5 
+
+sum( posterior[ p_grid < 0.5 ] )
+
+## 3.7
+sum( samples < 0.5 ) / 1e4
+
+## 3.8
+sum( samples > 0.5 & samples < 0.75 ) / 1e4
+
+## 3.9
+quantile( samples , 0.8 )
+
+## 3.10
+quantile( samples , c( 0.1 , 0.9 ) )
+
+## 3.11
+p_grid <- seq( from=0 , to=1 , length.out=1000 )
+
+prior <- rep(1,1000)
+
+likelihood <- dbinom( 3 , size=3 , prob=p_grid )
+
+posterior <- likelihood * prior
+
+posterior <- posterior / sum(posterior)
+
+samples <- sample( p_grid , size=1e4 , replace=TRUE , prob=posterior )
+
+## 3.12
+PI( samples , prob=0.5 )
+
+## 3.13
+HPDI( samples , prob=0.5 )
+
+## 3.14
+p_grid[ which.max(posterior) ]
+
+## 3.15
+chainmode( samples , adj=0.01 )
+
+## 3.16
+mean( samples )
+median( samples )
+
+## 3.17
+sum( posterior*abs( 0.5 - p_grid ) )
+
+##3.18
+loss <- sapply( p_grid , function(d) sum( posterior*abs( d - p_grid ) ) )
+
+##3.19
+p_grid[ which.min(loss) ]
 ```{r}
 summary(cars)
 ```
