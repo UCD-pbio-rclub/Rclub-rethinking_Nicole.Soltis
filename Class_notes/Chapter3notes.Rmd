@@ -2,99 +2,144 @@
 title: "Chapter3notes"
 author: "Nicole E Soltis"
 date: "February 19, 2016"
-output: html_document
+output: 
+  html_document: 
+    keep_md: yes
 ---
 ##Example 3.1
-
+```{r}
 PrPV <- 0.95
-
 PrPM <- 0.01
-
 PrV <- 0.001
-
 PrP <- PrPV*PrV + PrPM*(1-PrV)
-
 ( PrVP <- PrPV*PrV / PrP )
-
+```
 ## 3.2
-
+```{r}
 p_grid <- seq( from=0 , to=1 , length.out=1000 )
-
 prior <- rep( 1 , 1000 )
-
 likelihood <- dbinom( 6 , size=9 , prob=p_grid )
-
 posterior <- likelihood * prior
-
 posterior <- posterior / sum(posterior)
-
+```
 ## 3.3 random sampling with replacement from the vector p_grid
+```{r}
 samples <- sample( p_grid , prob=posterior , size=1e4 , replace=TRUE )
+```
+if not including prob=posterior, will sample randomly
 
 ## 3.4
+```{r}
 plot(samples)
+```
 
 ## 3.5
+```{r}
 library(rethinking)
-
 dens(samples)
+```
 
 ## 3.6
-/#add up posterior probability where p < 0.5 
-
+add up posterior probability where p < 0.5 
+```{r}
 sum( posterior[ p_grid < 0.5 ] )
+```
 
 ## 3.7
+```{r}
 sum( samples < 0.5 ) / 1e4
+```
 
 ## 3.8
+```{r}
 sum( samples > 0.5 & samples < 0.75 ) / 1e4
+```
 
 ## 3.9
+```{r}
 quantile( samples , 0.8 )
+```
+80% of the data is below this cutoff
 
 ## 3.10
+```{r}
 quantile( samples , c( 0.1 , 0.9 ) )
+```
 
 ## 3.11
+```{r}
 p_grid <- seq( from=0 , to=1 , length.out=1000 )
-
 prior <- rep(1,1000)
-
 likelihood <- dbinom( 3 , size=3 , prob=p_grid )
-
 posterior <- likelihood * prior
-
 posterior <- posterior / sum(posterior)
-
 samples <- sample( p_grid , size=1e4 , replace=TRUE , prob=posterior )
+```
 
 ## 3.12
+```{r}
 PI( samples , prob=0.5 )
+```
+percentile interval
 
 ## 3.13
+```{r}
 HPDI( samples , prob=0.5 )
+```
+highest posterior density interval
+
+narrowest interval
+
+if data is normal or perfectly symmetrical, HPDI is equal to PI
+
+more different if data is skewed
 
 ## 3.14
+```{r}
 p_grid[ which.max(posterior) ]
+```
 
 ## 3.15
+```{r}
 chainmode( samples , adj=0.01 )
+```
 
 ## 3.16
+```{r}
 mean( samples )
 median( samples )
+```
 
 ## 3.17
+```{r}
 sum( posterior*abs( 0.5 - p_grid ) )
+```
 
 ##3.18
+```{r}
+#d is set to one value of p_grid vector at a time
+#and for each value of d, calculates a new vector of difference between d and ALL of p_grid
+#figuring out loss for EVERY POSSIBLE decision, d
 loss <- sapply( p_grid , function(d) sum( posterior*abs( d - p_grid ) ) )
+plot(p_grid,loss)
+which.min(loss)
+p_grid[which.min(loss)]
+```
+
+sapply: take each item in (vector or list), apply function to it
+
+similar to pulling a function down a column in excel
+```{r}
+square_a_number <- function(x) x*x
+sapply(p_grid, square_a_number)
+
+#quicker version
+sapply(p_grid, function(x) x*x)
+```
 
 ##3.19
-p_grid[ which.min(loss) ]
 ```{r}
-summary(cars)
+p_grid[ which.min(loss) ]
 ```
 
 You can also embed plots, for example:
