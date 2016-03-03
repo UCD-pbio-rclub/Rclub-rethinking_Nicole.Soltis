@@ -94,20 +94,93 @@ dens(samples)
 HPDI( samples , prob=0.9 )
 ```
 
-_STOP AFTER 3M2 FOR 02/25 ASSIGNMENT_
-
 ## 3M3
+simulate the distribution of samples, averaging over the posterior uncertainty in p. What is the probability of observing 8 water in 15 tosses?
+```{r}
+set.seed(100) 
+library(rethinking)
+#taken from 3M2
+samples <- sample( p_grid , prob=posterior , size=1e4 , replace=TRUE )
+w <- rbinom( 1e4 , size=15 , prob=samples )
+simplehist(w)
+#probability of observing 1-15 water in 15 tosses:
+table(w)/1e4
+```
+prob(8) ~= 0.15
 
 ## 3M4
+Using the posterior distribution constructed from the new (8/15) data, now calculate the probability
+of observing 6 water in 9 tosses.
+```{r}
+#I'm confused about this one
+#samples3M4 <- sample(w , prob=samples , size=1e4 , replace=TRUE )
+#w3M4 <- rbinom( 1e4 , size=9 , prob=samples3M4 )
+table(w)/1e4
+```
+prob (6) ~= 0.17
 
 ## 3M5
+Start over at 3M1, but now use a prior that is zero below p = 0.5 and a constant above p = 0.5. This corresponds to prior information that a majority of the Earth’s surface is water. Repeat each problem above and compare the inferences. What difference does the better prior make? If it helps,
+compare inferences (using both priors) to the true value p = 0:7.
+```{r}
+p_grid <- seq( from=0 , to=1 , length.out=1000 )
+prior <- c(rep( 0 , 500 ), rep(1, 500))
+
+#repeat 3M1
+likelihood <- dbinom( 8 , size=15 , prob=p_grid )
+posterior <- likelihood * prior
+posterior <- posterior / sum(posterior)
+plot(p_grid, posterior, type="b")
+
+#repeat 3M2
+set.seed(100) 
+samples <- sample( p_grid , prob=posterior , size=1e4 , replace=TRUE )
+library(rethinking)
+dens(samples)
+HPDI( samples , prob=0.9 )
+
+#repeat 3M3
+set.seed(100) 
+library(rethinking)
+samples <- sample( p_grid , prob=posterior , size=1e4 , replace=TRUE )
+w <- rbinom( 1e4 , size=15 , prob=samples )
+simplehist(w)
+table(w)/1e4
+
+#repeat 3M4
+
+```
 
 ## 3H1
+Using grid approximation, compute the posterior distribution for the probability of a birth being a boy. Assume a uniform prior probability. Which parameter value maximizes the posterior probability?
+```{r}
+#boy = 1, girl = 0
+library(rethinking)
+data(homeworkch3)
+p_grid <- seq( from=0 , to=1 , length.out=1000 )
+prior <- rep( 1 , 1000 )
+likelihood <- dbinom( 2 , size=200 , prob=p_grid )
+posterior <- likelihood * prior
+posterior <- posterior / sum(posterior)
+plot(p_grid, posterior, type="b")
+```
 
 ## 3H2
+Using the sample function, draw 10,000 random parameter values from the posterior distribution
+you calculated above. Use these samples to estimate the 50%, 89%, and 97% highest posterior
+density intervals.
 
 ## 3H3
+Use rbinom to simulate 10,000 replicates of 200 births. You should end up with 10,000 numbers, each one a count of boys out of 200 births. Compare the distribution of predicted numbers of boys to the actual count in the data (111 boys out of 200 births). There are many good ways to visualize the simulations, but the dens command (part of the rethinking package) is probably the easiest way in this case. Does it look like the model fits the data well? That is, does the distribution of predictions include the actual observation as a central, likely outcome?
 
 ## 3H4
+Now compare 10,000 counts of boys from 100 simulated first borns only to the number of boys
+in the first births, birth1. How does the model look in this light?
 
 ## 3H5
+The model assumes that sex of first and second births are independent. To check this assumption,
+focus now on second births that followed female first borns. Compare 10,000 simulated counts
+of boys to only those second births that followed girls. To do this correctly, you need to count the
+number of first borns who were girls and simulate that many births, 10,000 times. Compare the
+counts of boys in your simulations to the actual observed count of boys following girls. How does the
+model look in this light? Any guesses what is going on in these data?

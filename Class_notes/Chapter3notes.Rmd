@@ -142,8 +142,69 @@ sapply(p_grid, function(x) x*x)
 p_grid[ which.min(loss) ]
 ```
 
-You can also embed plots, for example:
-
-```{r, echo=FALSE}
-plot(cars)
+## 3.20
+```{r}
+dbinom( 0:2 , size=2 , prob=0.7 )
 ```
+
+## 3.21
+
+Dummy data observation of seeing W in 2 tosses of globe
+```{r}
+rbinom( 1 , size=2 , prob=0.7 )
+```
+
+## 3.22 
+
+Run 10 simulations
+```{r}
+set.seed(100)
+rbinom( 10 , size=2 , prob=0.7 )
+```
+
+## 3.23
+
+In 100k observations, each value occurs in proportion to its likelihood
+```{r}
+dummy_w <- rbinom( 1e5 , size=2 , prob=0.7 )
+table(dummy_w)/1e5
+```
+
+## 3.24
+now with a 9-toss sample size
+```{r}
+dummy_w <- rbinom( 1e5 , size=9 , prob=0.7 ) 3.24
+simplehist( dummy_w , xlab="dummy water count" )
+```
+
+## 3.25
+simulate 10k predicted observations for 9 tosses
+```{r}
+w <- rbinom( 1e4 , size=9 , prob=0.6 )
+library(rethinking)
+simplehist(w)
+```
+next, propagate parameter uncertainty
+
+replace prob with samples from the posterior
+
+## 3.26
+```{r}
+#from 3.11
+p_grid <- seq( from=0 , to=1 , length.out=1000 )
+prior <- rep(1,1000)
+likelihood <- dbinom( 3 , size=3 , prob=p_grid )
+posterior <- likelihood * prior
+posterior <- posterior / sum(posterior)
+samples <- sample( p_grid , size=1e4 , replace=TRUE , prob=posterior )
+w <- rbinom( 1e4 , size=9 , prob=samples )
+library(rethinking)
+simplehist(w)
+```
+
+## 3.28
+```{r}
+library(rethinking)
+data(homeworkch3)
+
+sum(birth1) + sum(birth2)
