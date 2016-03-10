@@ -173,7 +173,8 @@ table(dummy_w)/1e5
 ## 3.24
 now with a 9-toss sample size
 ```{r}
-dummy_w <- rbinom( 1e5 , size=9 , prob=0.7 ) 3.24
+library(rethinking)
+dummy_w <- rbinom( 1e5 , size=9 , prob=0.7 )
 simplehist( dummy_w , xlab="dummy water count" )
 ```
 
@@ -208,3 +209,91 @@ library(rethinking)
 data(homeworkch3)
 
 sum(birth1) + sum(birth2)
+```
+
+## class notes
+what's the point of all this?
+
+observations
+
+prior (some assumptions and/ or previous observations)
+
+likelihood
+
+posterior (distribution of parameter estimates)
+
+sampling
+
+describe distribution of a population
+
+iteratively incorporate information from modeling to improve your estimation/ modeling
+
+estimate structure of your population/ data set
+
+incorporate previous knowledge
+
+understand whether your model works
+
+estimate certainty in your model/ estimation
+
+1. develop a model that fits our data (to the extent possible)
+
+2. use the model to estimate parameters (or principles)
+
+3. make predictions and compare to other situations/ datasets. Describe data in ways that are not purely numeric.
+
+## what are the steps/ procedures in relation to these goals?
+
+1. develop a model: bayes equation, likelihood based on data (observations) that we have, and prior assumptions
+
+a. use likelihood function and prior information to model data
+
+b. prior = flat (1 for all values)
+
+or prior = nonflat (1 for >0.5, 0 for <0.5 etc.)
+
+c. observation = current data --> into likelihood function (e.g. dbinom...)
+
+2. summarize the posterior (HPDI, PI)
+
+a. estimate the posterior (e.g. with grid approximation) with Bayes' equation
+
+b. sample from the posterior 
+
+have a posterior curve --> then randomly sample from the posterior to approximate it
+
+to estimate probability of parameters, want to take integrals under posterior curve BUT INTEGRALS ARE HARD
+
+instead, just randomly sample the posterior distribution a bunch and ask where samples came from to estimate probability WITHOUT INTEGRALS
+
+c. sampling: ask about probabilities and maximum estimates of parameters
+
+d. describe shape of distribution
+
+3. determine what parameters are important (loss function)
+use posterior as prior in further models
+
+a. use the model and the posterior estimates of uncertainty to make predictions
+
+b. simulate. take other data (observations), see if model fits.
+
+c. get a new data set (e.g. tosses of a new globe), then estimate how likely it is that you are tossing the same globe as before // how often would you have observed x?
+e.g. do 2 populations differ?
+
+## real life examples
+
+binomial distribution: segregation ratios
+
+expect 3:1 if dominant
+
+how often 60:40 if truly 0.75
+
+seed germination / survival rate
+
+with 2 populations, is *real* germination rate the same or different?
+
+## R bits
+```{r}
+head(samples, 20) #number tells head how many lines/ elements to print
+
+```

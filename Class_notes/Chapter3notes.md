@@ -94,7 +94,7 @@ sum( samples < 0.5 ) / 1e4
 ```
 
 ```
-## [1] 0.1688
+## [1] 0.1665
 ```
 
 ## 3.8
@@ -104,7 +104,7 @@ sum( samples > 0.5 & samples < 0.75 ) / 1e4
 ```
 
 ```
-## [1] 0.608
+## [1] 0.6141
 ```
 
 ## 3.9
@@ -127,7 +127,7 @@ quantile( samples , c( 0.1 , 0.9 ) )
 
 ```
 ##       10%       90% 
-## 0.4504505 0.8138138
+## 0.4494494 0.8118118
 ```
 
 ## 3.11
@@ -149,7 +149,7 @@ PI( samples , prob=0.5 )
 
 ```
 ##       25%       75% 
-## 0.7124625 0.9319319
+## 0.7064565 0.9309309
 ```
 percentile interval
 
@@ -161,7 +161,7 @@ HPDI( samples , prob=0.5 )
 
 ```
 ##      |0.5      0.5| 
-## 0.8418418 1.0000000
+## 0.8408408 1.0000000
 ```
 highest posterior density interval
 
@@ -188,7 +188,7 @@ chainmode( samples , adj=0.01 )
 ```
 
 ```
-## [1] 0.9816782
+## [1] 0.9857175
 ```
 
 ## 3.16
@@ -198,7 +198,7 @@ mean( samples )
 ```
 
 ```
-## [1] 0.8022093
+## [1] 0.7994526
 ```
 
 ```r
@@ -206,7 +206,7 @@ median( samples )
 ```
 
 ```
-## [1] 0.8418418
+## [1] 0.8408408
 ```
 
 ## 3.17
@@ -677,6 +677,139 @@ p_grid[ which.min(loss) ]
 ## [1] 0.8408408
 ```
 
-You can also embed plots, for example:
+## 3.20
 
-![](Chapter3notes_files/figure-html/unnamed-chunk-21-1.png)
+```r
+dbinom( 0:2 , size=2 , prob=0.7 )
+```
+
+```
+## [1] 0.09 0.42 0.49
+```
+
+## 3.21
+
+Dummy data observation of seeing W in 2 tosses of globe
+
+```r
+rbinom( 1 , size=2 , prob=0.7 )
+```
+
+```
+## [1] 1
+```
+
+## 3.22 
+
+Run 10 simulations
+
+```r
+set.seed(100)
+rbinom( 10 , size=2 , prob=0.7 )
+```
+
+```
+##  [1] 2 2 1 2 2 2 1 2 1 2
+```
+
+## 3.23
+
+In 100k observations, each value occurs in proportion to its likelihood
+
+```r
+dummy_w <- rbinom( 1e5 , size=2 , prob=0.7 )
+table(dummy_w)/1e5
+```
+
+```
+## dummy_w
+##       0       1       2 
+## 0.09016 0.41703 0.49281
+```
+
+## 3.24
+now with a 9-toss sample size
+
+```r
+library(rethinking)
+dummy_w <- rbinom( 1e5 , size=9 , prob=0.7 )
+simplehist( dummy_w , xlab="dummy water count" )
+```
+
+![](Chapter3notes_files/figure-html/unnamed-chunk-25-1.png)
+
+## 3.25
+simulate 10k predicted observations for 9 tosses
+
+```r
+w <- rbinom( 1e4 , size=9 , prob=0.6 )
+library(rethinking)
+simplehist(w)
+```
+
+![](Chapter3notes_files/figure-html/unnamed-chunk-26-1.png)
+next, propagate parameter uncertainty
+
+replace prob with samples from the posterior
+
+## 3.26
+
+```r
+#from 3.11
+p_grid <- seq( from=0 , to=1 , length.out=1000 )
+prior <- rep(1,1000)
+likelihood <- dbinom( 3 , size=3 , prob=p_grid )
+posterior <- likelihood * prior
+posterior <- posterior / sum(posterior)
+samples <- sample( p_grid , size=1e4 , replace=TRUE , prob=posterior )
+w <- rbinom( 1e4 , size=9 , prob=samples )
+library(rethinking)
+simplehist(w)
+```
+
+![](Chapter3notes_files/figure-html/unnamed-chunk-27-1.png)
+
+## 3.28
+
+```r
+library(rethinking)
+data(homeworkch3)
+
+sum(birth1) + sum(birth2)
+```
+
+```
+## [1] 111
+```
+
+## class notes
+what's the point of all this?
+
+observations
+
+prior (some assumptions and/ or previous observations)
+
+likelihood
+
+posterior (distribution of parameter estimates)
+
+sampling
+
+describe distribution of a population
+
+iteratively incorporate information from modeling to improve your estimation/ modeling
+
+estimate structure of your population/ data set
+
+incorporate previous knowledge
+
+understand whether your model works
+
+estimate certainty in your model/ estimation
+
+1. develop a model that fits our data (to the extent possible)
+
+2. use the model to estimate parameters (or principles)
+
+3. make predictions and compare to other situations/ datasets. Describe data in ways that are not purely numeric.
+
