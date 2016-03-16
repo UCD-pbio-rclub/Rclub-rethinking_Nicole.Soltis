@@ -1,0 +1,254 @@
+---
+title: "Chapter-04-notes"
+author: "Nicole E Soltis"
+date: "March 10, 2016"
+output: html_document
+---
+
+##4.1
+```{r}
+pos <- replicate( 1000 , sum( runif(16,-1,1) ) )
+hist(pos)
+plot(density(pos))
+```
+
+##4.2
+```{r}
+#random growth: product of 12 random numbers between 0 and 0.1
+#multiplying small  numbers is approximately the same as addition
+prod( 1 + runif(12,0,0.1) )
+```
+
+##4.3
+```{r}
+#distribution of random products
+growth <- replicate( 10000 , prod( 1 + runif(12,0,0.1) ) )
+dens( growth , norm.comp=TRUE )
+```
+
+##4.4
+Small effects multiplied are approximately additive, stabilize on Gaussian dist.
+```{r}
+
+big <- replicate( 10000 , prod( 1 + runif(12,0,0.5) ) )
+small <- replicate( 10000 , prod( 1 + runif(12,0,0.01) ) )
+```
+
+##4.4
+Large deviates multiplied are log-normal
+```{r}
+log.big <- replicate( 10000 , log(prod(1 + runif(12,0,0.5))) )
+```
+
+##4.5
+```{r}
+log.big <- replicate( 10000 , log(prod(1 + runif(12,0,0.5))) )
+```
+
+##4.6
+grid approximation: same as Bayes' theorem incorporating model definition
+```{r}
+w <- 6; n <- 9;
+p_grid <- seq(from=0,to=1,length.out=100)
+posterior <- dbinom(w,n,p_grid)*dunif(p_grid,0,1)
+posterior <- posterior/sum(posterior)
+```
+
+##4.7 - 4.10
+```{r}
+library(rethinking)
+data(Howell1)
+d <- Howell1
+
+#4.8
+str(d)
+
+#4.9
+d$height #extract column height from data frame d. a vector
+#data frames are a special list
+d[[1]] #gives you first element in list (first column in case of df)
+
+#4.10
+#only adults
+#d[row,col]
+d2 <- d[ d$age >= 18 , ]
+
+#distribution of heights
+dens(d2$height)
+
+```
+
+##4.11 prior for mean adult height
+```{r}
+curve( dnorm( x , 178 , 20 ) , from=100 , to=250 )
+```
+
+##4.12 prior for sd adult height
+```{r}
+curve( dunif( x , 0 , 50 ) , from=-10 , to=60 )
+```
+
+##4.13 simulate height data by sampling from the prior
+```{r}
+sample_mu <- rnorm( 1e4 , 178 , 20 )
+sample_sigma <- runif( 1e4 , 0 , 50 )
+prior_h <- rnorm( 1e4 , sample_mu , sample_sigma )
+dens( prior_h )
+```
+
+##4.14 to 4.15
+```{r}
+#grid approximation  golem of the posterior distribution
+library(rethinking)
+data(Howell1)
+d <- Howell1
+d2 <- d[ d$age >= 18 , ]
+
+mu.list <- seq( from=140, to=160 , length.out=200 )
+sigma.list <- seq( from=4 , to=9 , length.out=200 )
+post <- expand.grid( mu=mu.list , sigma=sigma.list )
+post$LL <- sapply( 1:nrow(post) , function(i) sum( dnorm(
+d2$height ,
+mean=post$mu[i] ,
+sd=post$sigma[i] ,
+log=TRUE ) ) )
+post$prod <- post$LL + dnorm( post$mu , 178 , 20 , TRUE ) +
+dunif( post$sigma , 0 , 50 , TRUE )
+post$prob <- exp( post$prod - max(post$prod) )
+
+#4.15 contour plot of posterior distribution
+contour_xyz( post$mu , post$sigma , post$prob )
+
+#4.16 heat map of posterior distribution
+image_xyz( post$mu , post$sigma , post$prob )
+
+#4.17 randomly sample parameter values from the posterior
+sample.rows <- sample( 1:nrow(post) , size=1e4 , replace=TRUE , prob=post$prob )
+sample.mu <- post$mu[ sample.rows ]
+sample.sigma <- post$sigma[ sample.rows ]
+
+#4.18 look at samples
+#col.alpha makes colors transparent
+plot( sample.mu , sample.sigma , cex=0.5 , pch=16, col=col.alpha(rangi2,0.1) )
+
+#4.19 characterize shapes of marginal posterior densities
+#marginal = averaged over other parameters
+dens( sample.mu )
+dens( sample.sigma )
+
+#4.20 summarize width using HDPI of densities
+HPDI(sample.mu)
+HPDI(sample.sigma)
+
+#4.21 subsample 20 heights from the original list
+#keep in mind that right skew in sd is common
+d3 <- sample( d2$height , size=20 )
+
+#4.22 grid approximation of the subsample from 4.21
+mu.list <- seq( from=150, to=170 , length.out=200 )
+sigma.list <- seq( from=4 , to=20 , length.out=200 )
+post2 <- expand.grid( mu=mu.list , sigma=sigma.list )
+post2$LL <- sapply( 1:nrow(post2) , function(i)
+sum( dnorm( d3 , mean=post2$mu[i] , sd=post2$sigma[i] ,
+log=TRUE ) ) )
+post2$prod <- post2$LL + dnorm( post2$mu , 178 , 20 , TRUE ) +
+dunif( post2$sigma , 0 , 50 , TRUE )
+post2$prob <- exp( post2$prod - max(post2$prod) )
+sample2.rows <- sample( 1:nrow(post2) , size=1e4 , replace=TRUE ,
+prob=post2$prob )
+sample2.mu <- post2$mu[ sample2.rows ]
+sample2.sigma <- post2$sigma[ sample2.rows ]
+plot( sample2.mu , sample2.sigma , cex=0.5 ,
+col=col.alpha(rangi2,0.1) ,
+xlab="mu" , ylab="sigma" , pch=16 )
+
+#4.23 marginal posterior density of sd averaged over mu
+dens( sample2.sigma , norm.comp=TRUE )
+#does not match normal approximation --> not gaussian
+
+```
+
+##4.24 -  MAP and quadratic approximation
+```{r}
+#the posterior's peak is at maximum a posteriori estimate (MAP)
+#use the quadratic approximation of the posterior distribution at the MAP peak to estimate the posterior's shape
+
+#4.24 load the data, select only adults
+library(rethinking)
+data(Howell1)
+d <- Howell1
+d2 <- d[ d$age >= 18 , ]
+
+#4.25 make alist of 3 equations to define the model
+flist <- alist(
+height ~ dnorm( mu , sigma ) ,
+mu ~ dnorm( 178 , 20 ) ,
+sigma ~ dunif( 0 , 50 )
+)
+
+#4.26 fit the model of the data
+m4.1 <- map( flist , data=d2 )
+
+#4.27 examine fit map model (89% interval by default)
+precis( m4.1 )
+#95% interval
+precis(m4.1,prob=0.95)
+
+#4.28 give map starting values for mu and sigma
+#list evaluates the code inside, alist does not
+start <- list(
+mu=mean(d2$height),
+sigma=sd(d2$height)
+)
+
+#4.29 try it again with more informative priors
+m4.2 <- map(
+alist(
+height ~ dnorm( mu , sigma ) ,
+mu ~ dnorm( 178 , 0.1 ) ,
+sigma ~ dunif( 0 , 50 )
+) ,
+data=d2 )
+precis( m4.2 )
+
+#4.30
+#variance-covariance matrix!
+#the list of means and a matrix of variances and covariances that are sufficient to describe a multi-dimensional Gaussian distribution
+vcov( m4.1 )
+
+#4.31 decomposition into
+#(1) a vector of variances for the parameters and 
+#(2) a correlation matrix that tells us how changes in any parameter lead to correlated changes in the others.
+diag( vcov( m4.1 ) )
+cov2cor( vcov( m4.1 ) )
+
+#4.32 sample vectors of values from multidimensional gaussian
+library(rethinking)
+post <- extract.samples( m4.1 , n=1e4 )
+head(post)
+
+#4.33
+#confirm that mean and sd of mu and sigma sampled from the posterior are close to the previous map values
+precis(post)
+
+#4.34
+#mvnorm is a multidimensional rnorm
+#simulates random vectors of multivariate Gaussian values
+library(MASS)
+post <- mvrnorm( n=1e4 , mu=coef(m4.1) , Sigma=vcov(m4.1) )
+
+#4.35
+#log(sigma) is more normal than sigma
+m4.1_logsigma <- map(
+alist(
+height ~ dnorm( mu , exp(log_sigma) ) ,
+mu ~ dnorm( 178 , 20 ) ,
+log_sigma ~ dnorm( 2 , 10 )
+) , data=d2 )
+
+#4.36
+#exp sigma to get distribution on natural scale
+post <- extract.samples( m4.1_logsigma )
+sigma <- exp( post$log_sigma )
+```
+

@@ -1,20 +1,48 @@
 # Statistical Rethinking Chapter 4 problems
 
-__Name:__
+__Name:__Nicole Soltis
 
 
 # For 03/17/16
 
 ## 4E1
+The first line (yi) is the likelihood
 
 ## 4E2
+The posterior distribution has 2 parameters (mu and sigma).
 
 ## 4E3
+yi ~ Normal(mu; sigma)
+mu ~ Normal(0; 10)
+sigma ~ Uniform(0; 10)
+
+
+
+\begin{equation}
+Pr(mu, sigma|y) = (producti Normal(yi|mu, sigma)* Normal(mu|0,10) * Uniform(sigma|0,10))/ (sum sum numerator) * d mu * d sigma
+\end{equation}
 
 ## 4M1
 
+Simulate observed heights from the prior of above
+```{r}
+library(rethinking)
+sample_mu <- rnorm( 1e4 , 0 , 10 )
+sample_sigma <- runif( 1e4 , 0 , 10 )
+prior_y <- rnorm( 1e4 , sample_mu , sample_sigma )
+dens( prior_y )
+```
 ## 4M2
+now as map formula
+```{r}
+#make alist of 3 equations to define the model
+flist <- alist(
+y ~ dnorm( mu , sigma ) ,
+mu ~ dnorm( 0 , 10 ) ,
+sigma ~ dunif( 0 , 10 )
+)
 
+```
 # For 03/24/16
 
 ## 4E4

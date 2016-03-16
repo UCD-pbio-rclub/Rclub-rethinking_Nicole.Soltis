@@ -115,9 +115,10 @@ of observing 6 water in 9 tosses.
 #I'm confused about this one
 #samples3M4 <- sample(w , prob=samples , size=1e4 , replace=TRUE )
 #w3M4 <- rbinom( 1e4 , size=9 , prob=samples3M4 )
-table(w)/1e4
+w <- rbinom( 1e4 , size=9 , prob=samples )
+simplehist(w)
+sum(w==6)/length(w)
 ```
-prob (6) ~= 0.17
 
 ## 3M5
 Start over at 3M1, but now use a prior that is zero below p = 0.5 and a constant above p = 0.5. This corresponds to prior information that a majority of the Earth’s surface is water. Repeat each problem above and compare the inferences. What difference does the better prior make? If it helps,
@@ -131,6 +132,7 @@ likelihood <- dbinom( 8 , size=15 , prob=p_grid )
 posterior <- likelihood * prior
 posterior <- posterior / sum(posterior)
 plot(p_grid, posterior, type="b")
+xlab="probability of water" , ylab="posterior probability")
 
 #repeat 3M2
 set.seed(100) 
@@ -146,8 +148,12 @@ samples <- sample( p_grid , prob=posterior , size=1e4 , replace=TRUE )
 w <- rbinom( 1e4 , size=15 , prob=samples )
 simplehist(w)
 table(w)/1e4
+sum(w==8)/length(w)
 
 #repeat 3M4
+w <- rbinom( 1e4 , size=9 , prob=samples )
+simplehist(w)
+sum(w==6)/length(w)
 
 ```
 
@@ -159,10 +165,15 @@ library(rethinking)
 data(homeworkch3)
 p_grid <- seq( from=0 , to=1 , length.out=1000 )
 prior <- rep( 1 , 1000 )
-likelihood <- dbinom( 2 , size=200 , prob=p_grid )
+#added in class
+totalboys=sum(birth1)+sum(birth2)
+totalbirths=length(birth1)+length(birth2)
+likelihood <- dbinom( totalboys , size=totalbirths , prob=p_grid )
 posterior <- likelihood * prior
 posterior <- posterior / sum(posterior)
-plot(p_grid, posterior, type="b")
+plot(p_grid, posterior, type="b", 
+     xlab="probability of son" , ylab="posterior probability")
+p_grid[which.max(posterior)]
 ```
 
 ## 3H2
@@ -170,12 +181,28 @@ Using the sample function, draw 10,000 random parameter values from the posterio
 you calculated above. Use these samples to estimate the 50%, 89%, and 97% highest posterior
 density intervals.
 
+```{r}
+samples <- sample( p_grid , prob=posterior , size=10000 , replace=TRUE )
+HPDI( samples , prob=0.5 )
+HPDI( samples , prob=0.89 )
+HPDI( samples , prob=0.97 )
+```
+
 ## 3H3
 Use rbinom to simulate 10,000 replicates of 200 births. You should end up with 10,000 numbers, each one a count of boys out of 200 births. Compare the distribution of predicted numbers of boys to the actual count in the data (111 boys out of 200 births). There are many good ways to visualize the simulations, but the dens command (part of the rethinking package) is probably the easiest way in this case. Does it look like the model fits the data well? That is, does the distribution of predictions include the actual observation as a central, likely outcome?
+
+```{r}
+b <- rbinom( 10000 , size=200 , prob=samples )
+simplehist(b)
+```
 
 ## 3H4
 Now compare 10,000 counts of boys from 100 simulated first borns only to the number of boys
 in the first births, birth1. How does the model look in this light?
+```{r}
+b <- rbinom( 10000 , size=100 , prob=samples )
+simplehist(b)
+```
 
 ## 3H5
 The model assumes that sex of first and second births are independent. To check this assumption,
@@ -184,3 +211,13 @@ of boys to only those second births that followed girls. To do this correctly, y
 number of first borns who were girls and simulate that many births, 10,000 times. Compare the
 counts of boys in your simulations to the actual observed count of boys following girls. How does the
 model look in this light? Any guesses what is going on in these data?
+
+```{r}
+#simulated counts of boys following girls:
+firstgirl=sum(birth1==0)
+b <- rbinom( 10000 , size=firstgirl , prob=samples )
+simplehist(b)
+
+#acctual count of boys following girls
+sum(subset(birth2,birth1==0))
+```
