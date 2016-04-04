@@ -46,11 +46,24 @@ sigma ~ dunif( 0 , 10 )
 # For 03/24/16
 
 ## 4E4
+linear model is: mui = alpha + beta*xi
 
 ## 4E5
+parameters in posterior: alpha, beta (which model mu with certainty), sigma. So really, 3 parameters.
 
 ## 4M3
+flist <- alist(
+y ~ dnorm( mu , sigma ),
+mu <- a + b*x,
+a ~ dnorm( 0 , 50 ),
+b ~ dunif( 0 , 10 ),
+sigma ~ dunif( 0 , 50 )
+)
 
+Mathematical model definition:
+\begin{equation}
+
+\end{equation}
 ## 4M4
 
 ## 4M5
@@ -60,6 +73,23 @@ sigma ~ dunif( 0 , 10 )
 # For 03/31/16
 
 ## 4H1
+#predicted height and 89% HDPI / PI for each individual
+
+#1: 46.95
+#2: 43.72
+#3: 64.78
+#4: 32.59
+#5: 54.63
+
+mN <- map(
+alist(
+height ~ dnorm( mu , sigma ) ,
+mu <- a + b*weight ,
+a ~ dnorm( 178 , 100 ) ,
+b ~ dnorm( 0 , 10 ) ,
+sigma ~ dunif( 0 , 50 )
+) , data=dN )
+
 
 ## 4H2
 
