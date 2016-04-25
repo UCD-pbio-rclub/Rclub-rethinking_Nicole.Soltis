@@ -6,11 +6,36 @@ __Name:__
 # For 04/11/2016
 
 ## 5E1
+Model 2 and 4 are multiple linear regression (more than one predictor variable, with independent slopes)
+In model 3 there is only 1 predictor variable, but it is encoded as the difference between 2 other variables (e.g. model blade length as leaf length - petiole length)
 
 ## 5E2
+Animal diversity is linearly related to latitude, but only after controlling for plant diversity.
+
+Diversity ~ latitude + plant
+Di ~ Normal(mui, sd)
+mui = alpha + betaL + betaP
+alpha ~ Normal(10,10)
+BetaL
 
 ## 5M1
+Spurious correlation:
+Fruit loop consumption is negatively correlated with height
+And fruit loop consumption is higher in children
 
 ## 5M3
+How could high divorce rate cause a higher marriage rate?
+High divorce rate means opportunity to get married more than once!
+Add a variable: which type of divorce (first, second marriage...)
 
 ## 5M4
+wikipedia LDS per state
+#careful with cbind
+#column called Location in D matches up with column called State in LDS
+#by default R would drop if columns don't match up... can tell R to keep all if needed
+d <- merge(d, LDS, by.x = "Location", by.y = "State")
+
+#standardize Marriage.s, MedianAgeMarriage.s, percent_LDS.s
+#add a third beta term for LDS members
+#if standardized
+bE ~ dnorm(0,1)

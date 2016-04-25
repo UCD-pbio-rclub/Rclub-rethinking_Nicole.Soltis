@@ -27,18 +27,18 @@ Pr(mu, sigma|y) = (producti Normal(yi|mu, sigma)* Normal(mu|0,10) * Uniform(sigm
 Simulate observed heights from the prior of above
 ```{r}
 library(rethinking)
-sample_mu <- rnorm( 1e4 , 0 , 10 )
+sample_mu <- rnorm( 1e4 , 0 , 10 ) #normal, centered at 0, sd is 10
 sample_sigma <- runif( 1e4 , 0 , 10 )
-prior_y <- rnorm( 1e4 , sample_mu , sample_sigma )
-dens( prior_y )
+prior <- rnorm( 1e4 , sample_mu , sample_sigma )
+dens( prior )
 ```
 ## 4M2
 now as map formula
 ```{r}
 #make alist of 3 equations to define the model
 flist <- alist(
-y ~ dnorm( mu , sigma ) ,
-mu ~ dnorm( 0 , 10 ) ,
+height ~ dnorm( mu , sigma ) ,
+mu ~ dnorm( 0 , 10 ) , #mean is 0, sd is 10
 sigma ~ dunif( 0 , 10 )
 )
 
@@ -61,36 +61,104 @@ sigma ~ dunif( 0 , 50 )
 )
 
 Mathematical model definition:
-\begin{equation}
+using R markdown and LaTeX
+~ in R markdown makes a space
+& aligns lines on the symbol
+$$
+\begin{align}
+y_i &\tilde ~~ Normal(\mu _i, \sigma)\\
+\mu _i &= \alpha +  \beta * x_i \\
+\alpha &\tilde Normal(0,50)\\
+\beta &\tilde Normal(0,10)\\
+\sigma &\tilde Uniform(0,50)\\
+\end{align}
+$$
 
-\end{equation}
 ## 4M4
-
+```{r}
+hti ~ dnorm( mu , sigma ),
+mu <- a + b*yeari,
+a ~ dnorm( 150 , 50 ),
+#height in cm
+b ~ dunif( 1 , 10 ), #kids grow 1-10 cm/ year?
+#slope in height, year
+sigma ~ dunif( 0 , 50 )
+```
 ## 4M5
-
+```{r}
+#decrease prior for height to match data
+#and smaller sd because more informative prior
+#data already consistent with height increase annually
+ht ~ dnorm( mu , sigma ),
+mu <- a + b*year,
+a ~ dnorm( 120 , 20 ),
+#height in cm
+b ~ dunif( 1 , 10 ),
+#slope in height, year
+sigma ~ dunif( 0 , 50 )
+```
 ## 4M6
-
+```{r}
+#variance (sd^2) in heights among cohort never over 64cm
+#so I'll use a smaller sigma from 0 to 8
+ht ~ dnorm( mu , sigma ),
+mu <- a + b*year,
+a ~ dnorm( 120 , 20 ),
+#height in cm
+b ~ dunif( 1 , 10 ),
+#slope in height, year
+sigma ~ dunif( 0 , 8 )
+```
 # For 03/31/16
 
 ## 4H1
 #predicted height and 89% HDPI / PI for each individual
 
-#1: 46.95
-#2: 43.72
-#3: 64.78
-#4: 32.59
-#5: 54.63
+```{r}
+library(rethinking)
+data(Howell1)
+d <- Howell1
+model <- map(
+  alist(
+    height ~ dnorm( mu , sigma ) ,
+    mu <- a + b*weight ,
+    a ~ dnorm( 178 , 100 ) ,
+    b ~ dnorm( 0 , 10 ) ,
+    sigma ~ dunif( 0 , 50 )
+) , data=d )
 
-mN <- map(
-alist(
-height ~ dnorm( mu , sigma ) ,
-mu <- a + b*weight ,
-a ~ dnorm( 178 , 100 ) ,
-b ~ dnorm( 0 , 10 ) ,
-sigma ~ dunif( 0 , 50 )
-) , data=dN )
+#Gina's option
+post <- extract.samples(model) #all combinations of a, b when MAP fit the model
+unknown_weights=c(46.95,43.72,64.78,32.59,54.63)
+mu.link <- function(weight) post$a + post$b*weight
 
+#Julin's option
+#standardize weights
+#use link
+#predict mean height for a given weight
+#sim heights for a given weight
+#calculate PIs
+#print as data frame
+#kable from knitr library
+```
 
 ## 4H2
+```{r}
+library(rethinking)
+data(Howell1)
+d <- Howell1
+d2 <- d[ d$age < 18 , ]
 
+#a. fit a linear regression
+mymap <- map(
+  alist(
+    height
+  )
+)
+#b. superimpose MAP regression line and HDPI
+#c. better model?
+```
 ## 4H3
+```{r}
+#similar to previous formula but log(weight)
+```

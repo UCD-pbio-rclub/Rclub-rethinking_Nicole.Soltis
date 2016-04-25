@@ -12,9 +12,118 @@ __Name:__
 # For 04/18/2016
 
 ## 5M2
-
+Masked relationship: outcome pos corr var 1, neg corr var 2, var 1 corr var 2.
+**
 ## 5H1
+
+```{r}
+library(rethinking)
+data(foxes)
+
+#first standardize the variables
+foxes$area.s <- (foxes$area - mean(foxes$area))/sd(foxes$area)
+foxes$groupsize.s <- (foxes$groupsize - mean(foxes$groupsize))/sd(foxes$groupsize)
+
+m5H1.a <- map(
+alist(
+weight ~ dnorm( mu , sigma ) ,
+mu <- a + bA * area.s ,
+a ~ dnorm( 10 , 10 ) ,
+bA ~ dnorm( 0 , 1 ) ,
+sigma ~ dunif( 0 , 10 )
+) , data = foxes )
+
+m5H1.b <- map(
+alist(
+weight ~ dnorm( mu , sigma ) ,
+mu <- a + bA * groupsize.s ,
+a ~ dnorm( 10 , 10 ) ,
+bA ~ dnorm( 0 , 1 ) ,
+sigma ~ dunif( 0 , 10 )
+) , data = foxes )
+
+# plot it all
+
+MAM.seq.a <- seq( from=-3 , to=3, length.out=30 )
+mu.a <- link( m5H1.a , data=data.frame(area.s=MAM.seq.a) )
+mu.PI.a <- apply( mu.a , 2 , PI )
+plot( weight ~ area.s , data=foxes , col=rangi2 )
+abline( m5H1.a )
+shade(mu.PI.a, MAM.seq.a)
+
+MAM.seq.b <- seq ( from =-3, to=3, length.out=30)
+mu.b <- link(m5H1.b, data=data.frame(groupsize.s=MAM.seq.b))
+mu.PI.b <- apply(mu.b, 2, PI)
+plot( weight ~ groupsize.s , data=foxes , col=rangi2 )
+abline( m5H1.b )
+shade(mu.PI.b, MAM.seq.b)
+
+```
+
+Groupsize is a better (negative) predictor of average fox body weight than is area.
 
 ## 5H2
 
+Multiple linear regression
+
+```{r}
+m5H2 <- map(
+alist(
+weight ~ dnorm( mu , sigma ) ,
+mu <- a + bA*area.s + bG*groupsize.s ,
+a ~ dnorm( 10 , 10 ) ,
+bA ~ dnorm( 0 , 1 ) ,
+bG ~ dnorm( 0 , 1 ) ,
+sigma ~ dunif( 0 , 10 )
+) ,
+data = foxes )
+
+#groupsize plot
+# compute expected value at MAP, for each State
+mu.a <- coef(m5H2)['a'] + coef(m5H2)['bA']*foxes$area.s
+# compute residual for each State
+m.resid.a <- foxes$groupsize.s - mu.a
+plot(weight ~ m.resid.a, data=foxes)
+
+#area plot
+# compute expected value at MAP, for each State
+mu.g <- coef(m5H2)['a'] + coef(m5H2)['bG']*foxes$groupsize.s
+# compute residual for each State
+m.resid.g <- foxes$area.s - mu.g
+plot(weight ~ m.resid.g, data=foxes)
+
+```
+
 ## 5H3
+```{r}
+#weight as avgfood and groupsize
+foxes$avgfood.s <- (foxes$avgfood - mean(foxes$avgfood))/sd(foxes$avgfood)
+
+m5H3.a <- map(
+alist(
+weight ~ dnorm( mu , sigma ) ,
+mu <- a + bA*area.s + bF*avgfood.s ,
+a ~ dnorm( 10 , 10 ) ,
+bA ~ dnorm( 0 , 1 ) ,
+bF ~ dnorm( 0 , 1 ) ,
+sigma ~ dunif( 0 , 10 )
+) ,
+data = foxes )
+
+#weight as avgfood, groupsize, and area
+m5H3.b <- map(
+alist(
+weight ~ dnorm( mu , sigma ) ,
+mu <- a + bA*area.s + bG*groupsize.s + bF*avgfood.s ,
+a ~ dnorm( 10 , 10 ) ,
+bA ~ dnorm( 0 , 1 ) ,
+bG ~ dnorm( 0 , 1 ) ,
+bF ~ dnorm( 0 , 1 ) ,
+sigma ~ dunif( 0 , 10 )
+) ,
+data = foxes )
+
+```
+Avgfood vs. area as predictors:
+
+When avgfood and area both in a model, reduced effects and larger SE:
