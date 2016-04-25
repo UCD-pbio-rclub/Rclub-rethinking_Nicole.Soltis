@@ -1,0 +1,23 @@
+---
+title: "Chapter-05-part3-assignment"
+output: 
+  html_document: 
+    keep_md: yes
+---
+# Statistical Rethinking Chapter 4 problems
+
+__Name:__
+
+
+# For 05/02/2016
+
+##5E3
+
+##5E4
+
+## 5M3
+How could high divorce rate cause a higher marriage rate?
+High divorce rate means opportunity to get married more than once!
+Add a variable: which type of divorce (first, second marriage...)
+
+##5M5

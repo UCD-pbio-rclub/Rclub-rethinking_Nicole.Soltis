@@ -23,11 +23,6 @@ Spurious correlation:
 Fruit loop consumption is negatively correlated with height
 And fruit loop consumption is higher in children
 
-## 5M3
-How could high divorce rate cause a higher marriage rate?
-High divorce rate means opportunity to get married more than once!
-Add a variable: which type of divorce (first, second marriage...)
-
 ## 5M4
 wikipedia LDS per state
 #careful with cbind
