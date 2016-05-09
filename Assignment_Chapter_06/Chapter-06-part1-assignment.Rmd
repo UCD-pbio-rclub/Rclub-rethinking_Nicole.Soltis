@@ -4,6 +4,8 @@ author: "Nicole E Soltis"
 output: html_document
 ---
 
+__Name:__Nicole E Soltis
+
 #For 05/09/16
 
 ## 6E1
