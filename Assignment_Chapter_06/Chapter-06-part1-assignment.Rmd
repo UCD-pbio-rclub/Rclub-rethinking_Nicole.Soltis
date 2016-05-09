@@ -1,0 +1,41 @@
+---
+title: "Chapter-06-part1-assignment"
+author: "Nicole E Soltis"
+output: html_document
+---
+
+#For 05/09/16
+
+## 6E1
+Criteria that define information entropy:
+
+- measure of uncertainty is continuous (to avoid stepwise changes in uncertainty in response to changes in probability)
+
+- measure of uncertainty increases with number of possible events (because these make outcomes more difficult to predict)
+
+- measure of uncertainty is additive
+
+## 6E2
+Heads 70%:
+
+pH = 0.7, pT = 0.3
+```{r}
+p <- c(0.3, 0.7)
+-sum( p*log(p) )
+```
+
+## 6E3
+4-sided die: 1 at 20%, 2 at 25%, 3 at 25%, 4 at 30% 
+
+p1 = 0.2, p2 = 0.25, p3 = 0.25, p4 = 0.3
+```{r}
+p <- c(0.2, 0.25, 0.25, 0.3)
+-sum( p*log(p) )
+```
+
+## 6E4
+4-sided die: never shows 4
+```{r}
+p <- c(0.33, 0.33, 0.33)
+-sum( p*log(p) )
+```
