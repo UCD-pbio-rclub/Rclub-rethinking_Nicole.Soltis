@@ -9,16 +9,15 @@ __Name:__Nicole E Soltis
 #For 05/16/16
 
 ## 6M1
-Write down and compare the definitions of AIC, DIC, and WAIC. Which of these criteria
-is most general? Which assumptions are required to transform a more general criterion into a less general one?
 
-AIC: Akaike Information Criterion to estimate out-of-sample deviance and to approximate predictive accuracy. It includes the in-sample deviance and twice the number of free parameters. AIC is not general.
+AIC: Akaike Information Criterion to estimate out-of-sample deviance and to approximate predictive accuracy. AIC is the least general.
+Training deviance deviance + two * the number of free parameters
 
-DIC: deviance information criterion. Responds to informative priors.
+DIC: deviance information criterion. Responds to informative priors. Average training deviance across posterior + (difference between average training deviance and the deviance calculated using the posterior mean)
 
 WAIC: widely applicable information criterion
 
-most general: WAIC
+most general: WAIC > DIC > AIC
 
 Assumptions to make criterion less general:
 
@@ -28,21 +27,26 @@ Assumptions to make criterion less general:
 
 - sample size N much greater than number of parameters k (DIC and AIC)
 
+## 6M3
+
+If you use fewer samples (observations), the model has less to predict. Since deviance is additive, it will be higher for a larger dataset. And thus AIC/DIC/WAIC will be lower (and better) for the dataset with missing observations 
+
 ## 6M5
 
 Informative priors reduce overfitting because: The likelihood is averaged over priors, so by introducing parameters, complexity is penalized. 
 
+Constrains parameters from being too influenced by the actual training dataset.
+
 ## 6M6
 
-Information explanation
+Overly informative priors cause underfitting: too skeptical, does not learn from the data.
 
-Informative priors reduce overfitting because:
-
-##6J1: explore how the code in Code Block 6.16 works.  Explain what is happening in each line.
+##6J1
 
 ```{r}
 #from 6.15
 library(rethinking)
+?cars
 data(cars)
 m <- map(
 alist(
@@ -54,20 +58,30 @@ sigma ~ dunif(0,30)
 ) , data=cars )
 #set number of samples to 1000
 n_samples <- 1000
+#extract samples from the posterior of model m
+#gives values of alpha, beta, sigma
 post <- extract.samples(m,n=1000)
 #sapply applies a function over the list of samples
-#1:n_samples specifies the length of the list
+#1:n_samples specifies the length of the list : 1000 times
+#must perform function once per sample, n = 1000 samples
 ll <- sapply( 1:n_samples ,
-#function(s) defines the function
+#function(s) creates the function
+#takes as input some variable s (s = 1:n)
 function(s) {
-#post takes the posterior distribution of samples
+#post is the posterior distribution of samples
+#applying a model for mu on each sample
+  #so take a value in column a, row s + column b, row s * each speed observation
+  #for each observation, calculate likelihood across the posterior distribution
 mu <- post$a[s] + post$b[s]*cars$speed
-#dnorm draws from a normal distribution
+#dnorm: density function for normal distribution with observation, mean, sd
+#for each observed distance, what is the probability that you would have observed this if the mean was mu and the sd was post$sigma[s]
 dnorm( cars$dist , mu , post$sigma[s] , log=TRUE )
+#log=TRUE gives log(p) probabilities
 } )
+
+#ll is an array with 50 rows x 1000 columns
+#each column is 1/1000 samples from posterior
+#each row is a true observation
+#datum is draw from posterior
 ```
-
-## 6M3
-
-## 6M4
 

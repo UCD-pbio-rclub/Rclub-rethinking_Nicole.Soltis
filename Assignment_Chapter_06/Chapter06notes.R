@@ -2,6 +2,10 @@
 
 #Nicole E Soltis
 #----------------------------------------
+#Divergence: difference between two entropies. Additional entropy induced by using a probability distribution q to predict events from a distribution p.
+
+#Deviance: a measure of relative model fit, summed across all observations
+
 #6.1
 #example of overfitting: average brain vol and body mass for 7 hominin spp
 #building a dataframe from scratch (3 vectors)
@@ -144,6 +148,9 @@ for ( i in kseq ) {
 }
 
 # section 6.3, 6.4
+
+#overfitting: as you add parameters, you will improve fit to the test sample. But your actual GOAL is to better fit NEW DATA.
+
 #6.15
 #demonstration of WAIC calculations
 #regression fit with MAP
@@ -167,11 +174,17 @@ ll <- sapply( 1:n_samples ,
                 mu <- post$a[s] + post$b[s]*cars$speed
                 dnorm( cars$dist , mu , post$sigma[s] , log=TRUE )
               } )
+ltest <- c(-500,-600,-700,-800)
+exp(ltest)
+log(sum(exp(ltest)))
 
 #6.17
 #now compute Bayesian deviance (lppd)
 n_cases <- nrow(cars)
 lppd <- sapply( 1:n_cases , function(i) log_sum_exp(ll[i,]) - log(n_samples) )
+
+#use apply... simpler?
+lppd.jm <- apply(ll,1,function(x) log_sum_exp(x) - log(n_samples))
 
 #6.18 pWAIC: effective number of parameters
 #compute variance across samples for each observation, then add those values
