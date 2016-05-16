@@ -9,38 +9,64 @@ __Name:__Nicole E Soltis
 #For 05/16/16
 
 ## 6M1
+Write down and compare the definitions of AIC, DIC, and WAIC. Which of these criteria
+is most general? Which assumptions are required to transform a more general criterion into a less general one?
 
-## 6M2
+AIC: Akaike Information Criterion to estimate out-of-sample deviance and to approximate predictive accuracy. It includes the in-sample deviance and twice the number of free parameters. AIC is not general.
+
+DIC: deviance information criterion. Responds to informative priors.
+
+WAIC: widely applicable information criterion
+
+most general: WAIC
+
+Assumptions to make criterion less general:
+
+- flat priors or priors overwhelmed by the likelihood (AIC)
+
+- posterior distribution is approximately multivariate Gaussian (DIC and AIC)
+
+- sample size N much greater than number of parameters k (DIC and AIC)
+
+## 6M5
+
+Informative priors reduce overfitting because: The likelihood is averaged over priors, so by introducing parameters, complexity is penalized. 
+
+## 6M6
+
+Information explanation
+
+Informative priors reduce overfitting because:
+
+##6J1: explore how the code in Code Block 6.16 works.  Explain what is happening in each line.
+
+```{r}
+#from 6.15
+data(cars)
+m <- map(
+alist(
+dist ~ dnorm(mu,sigma),
+mu <- a + b*speed,
+a ~ dnorm(0,100),
+b ~ dnorm(0,10),
+sigma ~ dunif(0,30)
+) , data=cars )
+#set number of samples to 1000
+n_samples <- 1000
+post <- extract.samples(m,n=1000)
+#sapply applies a function over the list of samples
+#1:n_samples specifies the length of the list
+ll <- sapply( 1:n_samples ,
+#function(s) defines the function
+function(s) {
+#post takes the posterior distribution of samples
+mu <- post$a[s] + post$b[s]*cars$speed
+#dnorm draws from a normal distribution
+dnorm( cars$dist , mu , post$sigma[s] , log=TRUE )
+} )
+```
 
 ## 6M3
 
 ## 6M4
 
-## 6M5
-
-## 6M6
-
-## 6HARD
-
-```{r}
-library(rethinking)
-data(Howell1)
-d <- Howell1
-d$age <- (d$age - mean(d$age))/sd(d$age)
-set.seed( 1000 )
-i <- sample(1:nrow(d),size=nrow(d)/2)
-d1 <- d[ i , ]
-d2 <- d[ -i , ]
-```
-
-## 6H1
-
-## 6H2
-
-## 6H3
-
-## 6H4
-
-## 6H5
-
-## 6H6

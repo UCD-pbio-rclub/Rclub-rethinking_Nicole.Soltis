@@ -1,0 +1,33 @@
+---
+title: "Chapter-06-part3-assingment"
+author: "Nicole E Soltis"
+date: "May 23, 2016"
+output: html_document
+---
+
+## 6M2
+
+## 6HARD
+
+```{r}
+library(rethinking)
+data(Howell1)
+d <- Howell1
+d$age <- (d$age - mean(d$age))/sd(d$age)
+set.seed( 1000 )
+i <- sample(1:nrow(d),size=nrow(d)/2)
+d1 <- d[ i , ]
+d2 <- d[ -i , ]
+```
+
+## 6H1
+
+## 6H2
+
+## 6H3
+
+## 6H4
+
+## 6H5
+
+## 6H6
