@@ -42,6 +42,7 @@ Informative priors reduce overfitting because:
 
 ```{r}
 #from 6.15
+library(rethinking)
 data(cars)
 m <- map(
 alist(

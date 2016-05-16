@@ -197,7 +197,7 @@ dim(d)
 
 #6.22
 #predict kilocalories per gram of milk
-#fit four different models
+#fit four different models (with flat priors)
 #and: constrain sd of outcome to be positive
 a.start <- mean(d$kcal.per.g) 
 sigma.start <- log(sd(d$kcal.per.g))
@@ -230,15 +230,26 @@ m6.14 <- map(
   data=d , start=list(a=a.start,bn=0,bm=0,log.sigma=sigma.start) )
 
 #6.23
+#compare models: first compute the criterion
 WAIC( m6.14 )
 
 #6.24
+#rank models from lowest (best) to highest (worst) based on WAIC values
+#calculate weights: relative distances among models
 ( milk.models <- compare( m6.11 , m6.12 , m6.13 , m6.14 ) )
 
+#ALL pairwise model differences:
+milk.models@dSE
+
 #6.25
+#plot the WAIC values
+#filled points: in-sample deviance (-2 * lppd) = 2pWAIC
+#open points: WAIC
+#line segment: WAIC se
+#grey triangles and lines: each WAIC vs. top-ranked WAIC
 plot( milk.models , SE=TRUE , dSE=TRUE )
 
-#6.26
+#6.26 simulate probability that model differenc is negative
 diff <- rnorm( 1e5 , 6.7 , 7.26 )
 sum(diff<0)/1e5
 
