@@ -262,19 +262,29 @@ milk.models@dSE
 #grey triangles and lines: each WAIC vs. top-ranked WAIC
 plot( milk.models , SE=TRUE , dSE=TRUE )
 
-#6.26 simulate probability that model differenc is negative
+#6.26 simulate probability that difference between models is negative (opposite of predicted)
 diff <- rnorm( 1e5 , 6.7 , 7.26 )
 sum(diff<0)/1e5
 
 #6.27
-coeftab(m6.11,m6.12,m6.13,m6.14)
+#takes a series of fit models as input
+#builds a consolidated table of MAF estimates
+coeftab(m6.11,m6.12,m6.13,m6.14, se=T)
+#nobs = number of observations
 
 #6.28
+#plot estimates to better understand the width of posterior densities
 plot( coeftab(m6.11,m6.12,m6.13,m6.14) )
+#group = 1 parameter across models
+#row = each model
+#line segment = 89% CI
+#each point is a MAF estimate
 
 #6.29
-# compute counterfactual predictions
+# simulate and plot counterfactual predictions
+#for minimum WAIC model: m6.14
 # neocortex from 0.5 to 0.8
+#simulate posterior predictive distribution
 nc.seq <- seq(from=0.5,to=0.8,length.out=30)
 d.predict <- list(
   kcal.per.g = rep(0,30), # empty outcome
@@ -286,13 +296,20 @@ mu <- apply( pred.m6.14 , 2 , mean )
 mu.PI <- apply( pred.m6.14 , 2 , PI )
 # plot it all
 plot( kcal.per.g ~ neocortex , d , col=rangi2 )
+#dashed regression line
 lines( nc.seq , mu , lty=2 )
+#dashed 89% CI
 lines( nc.seq , mu.PI[1,] , lty=2 )
 lines( nc.seq , mu.PI[2,] , lty=2 )
 
 #6.30
+#compute and add model-averaged posterior predictions
+#ensemble: WAIC + weight + simulated outcomes per model
+#ensemble is similar to link and sim
 milk.ensemble <- ensemble( m6.11 , m6.12 , m6.13 , m6.14 , data=d.predict )
 mu <- apply( milk.ensemble$link , 2 , mean )
 mu.PI <- apply( milk.ensemble$link , 2 , PI )
 lines( nc.seq , mu )
 shade( mu.PI , nc.seq )
+#shaded region = intervals for mean --> now includes a slope near 0. 
+#low ranked-models suggest near-0 slope -- guard against overconfidence
