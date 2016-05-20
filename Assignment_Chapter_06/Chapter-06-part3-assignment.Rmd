@@ -31,48 +31,50 @@ d1 <- d[ i , ]
 d2 <- d[ -i , ]
 
 names(d1)
+a.start <- mean(d1$height) 
+sigma.start <- log(sd(d1$height))
 #first order model
 m1 <- map(
   alist(
     height ~ dnorm( mu , exp(log.sigma) ),
     mu <- a + b1*age
   ) ,
-  data=d , start=list(a=a.start,b1=0,log.sigma=sigma.start) )
+  data=d1 , start=list(a=a.start,b1=0,log.sigma=sigma.start) )
 #second order model
 m2 <- map(
   alist(
    height ~ dnorm( mu , exp(log.sigma) ) ,
     mu <- a + b1*age + b2*(age^2)
   ) ,
-  data=d , start=list(a=a.start,b1=0,b2=0,log.sigma=sigma.start) )
+  data=d1 , start=list(a=a.start,b1=0,b2=0,log.sigma=sigma.start) )
 #third order model
 m3 <- map(
   alist(
    height ~ dnorm( mu , exp(log.sigma) ) ,
     mu <- a + b1*age + b2*(age^2) + b3*(age^3)
   ) ,
-  data=d , start=list(a=a.start,b1=0,b2=0,b3=0,log.sigma=sigma.start) )
+  data=d1 , start=list(a=a.start,b1=0,b2=0,b3=0,log.sigma=sigma.start) )
 #fourth order model
 m4 <- map(
   alist(
    height ~ dnorm( mu , exp(log.sigma) ) ,
     mu <- a + b1*age + b2*(age^2) + b3*(age^3) + b4*(age^4)
   ) ,
-  data=d , start=list(a=a.start,b1=0,b2=0,b3=0,b4=0,log.sigma=sigma.start) )
+  data=d1 , start=list(a=a.start,b1=0,b2=0,b3=0,b4=0,log.sigma=sigma.start) )
 #fifth order model
 m5 <- map(
   alist(
    height ~ dnorm( mu , exp(log.sigma) ) ,
     mu <- a + b1*age + b2*(age^2) + b3*(age^3) + b4*(age^4) + b5*(age^5)
   ) ,
-  data=d , start=list(a=a.start,b1=0,b2=0,b3=0,b4=0,b5=0,log.sigma=sigma.start) )
+  data=d1 , start=list(a=a.start,b1=0,b2=0,b3=0,b4=0,b5=0,log.sigma=sigma.start) )
 #sixth order model
 m6 <- map(
   alist(
    height ~ dnorm( mu , exp(log.sigma) ) ,
     mu <- a + b1*age + b2*(age^2) + b3*(age^3) + b4*(age^4) + b5*(age^5) + b6*(age^6)
   ) ,
-  data=d , start=list(a=a.start,b1=0,b2=0,b3=0,b4=0,b5=0,b6=0,log.sigma=sigma.start) )
+  data=d1 , start=list(a=a.start,b1=0,b2=0,b3=0,b4=0,b5=0,b6=0,log.sigma=sigma.start) )
 
 #6H1
 compare(m1,m2,m3,m4,m5,m6)
@@ -88,7 +90,7 @@ pred.6h2.m1 <- link( m1 , data=d.predict )
 mu.m1 <- apply( pred.6h2.m1 , 2 , mean )
 mu.PI.m1 <- apply( pred.6h2.m1 , 2, function(x) PI(x, prob=0.97) )
 # plot it all
-plot( height ~ age , d , col=rangi2 )
+plot( height ~ age , d1 , col=rangi2 )
 #dashed regression line
 lines( ag.seq , mu.m1 , lty=2 )
 shade(mu.PI.m1, ag.seq)
@@ -97,7 +99,7 @@ shade(mu.PI.m1, ag.seq)
 pred.6h2.m2 <- link( m2 , data=d.predict )
 mu.m2 <- apply( pred.6h2.m2 , 2 , mean )
 mu.PI.m2 <- apply( pred.6h2.m2 , 2, function(x) PI(x, prob=0.97) )
-plot( height ~ age , d , col=rangi2 )
+plot( height ~ age , d1 , col=rangi2 )
 lines( ag.seq , mu.m2 , lty=2 )
 shade(mu.PI.m2, ag.seq)
 
@@ -105,7 +107,7 @@ shade(mu.PI.m2, ag.seq)
 pred.6h2.m3 <- link( m3 , data=d.predict )
 mu.m3 <- apply( pred.6h2.m3 , 2 , mean )
 mu.PI.m3 <- apply( pred.6h2.m3 , 2, function(x) PI(x, prob=0.97) )
-plot( height ~ age , d , col=rangi2 )
+plot( height ~ age , d1 , col=rangi2 )
 lines( ag.seq , mu.m3 , lty=2 )
 shade(mu.PI.m3, ag.seq)
 
@@ -113,7 +115,7 @@ shade(mu.PI.m3, ag.seq)
 pred.6h2.m4 <- link( m4 , data=d.predict )
 mu.m4 <- apply( pred.6h2.m4 , 2 , mean )
 mu.PI.m4 <- apply( pred.6h2.m4 , 2, function(x) PI(x, prob=0.97) )
-plot( height ~ age , d , col=rangi2 )
+plot( height ~ age , d1 , col=rangi2 )
 lines( ag.seq , mu.m4 , lty=2 )
 shade(mu.PI.m4, ag.seq)
 
@@ -121,7 +123,7 @@ shade(mu.PI.m4, ag.seq)
 pred.6h2.m5 <- link( m5 , data=d.predict )
 mu.m5 <- apply( pred.6h2.m5 , 2 , mean )
 mu.PI.m5 <- apply( pred.6h2.m5 , 2, function(x) PI(x, prob=0.97) )
-plot( height ~ age , d , col=rangi2 )
+plot( height ~ age , d1 , col=rangi2 )
 lines( ag.seq , mu.m5 , lty=2 )
 shade(mu.PI.m5, ag.seq)
 
@@ -129,7 +131,7 @@ shade(mu.PI.m5, ag.seq)
 pred.6h2.m6 <- link( m6 , data=d.predict )
 mu.m6 <- apply( pred.6h2.m6 , 2 , mean )
 mu.PI.m6 <- apply( pred.6h2.m6 , 2 , function(x) PI(x, prob=0.97) )
-plot( height ~ age , d , col=rangi2 )
+plot( height ~ age , d1 , col=rangi2 )
 lines( ag.seq , mu.m6 , lty=2 )
 shade(mu.PI.m6, ag.seq)
 
@@ -137,23 +139,138 @@ shade(mu.PI.m6, ag.seq)
 d1.ensemble <- ensemble( m1 , m2 , m3 , m4 , m5, m6, data=d.predict )
 mu.6h3 <- apply( d1.ensemble$link , 2 , mean )
 mu.PI.6h3 <- apply( d1.ensemble$link , 2 , PI )
-plot( height ~ age , d , col=rangi2 )
+plot( height ~ age , d1 , col=rangi2 )
 lines( ag.seq , mu.6h3 )
 shade( mu.PI.6h3 , ag.seq )
 
 #6H4
 #compute test-sample deviance for each model
-#log-likelihood of height data
-sum( dnorm( d2$height , mu , sigma , log=TRUE ) )
-#mu is a vector of predicted means
-#sigma is MAP sd
+#calculate deviance using data in d2
+#m1
+post.m1 <- extract.samples(m1,n=1000)
+
+#log-likelihood of each observation i at each sample s from the posterior
+n_samples <- 1000
+ll.m1 <- sapply( 1:n_samples ,
+function(s) {
+mu <- post.m1$a[s] + post.m1$b1[s]*d2$age
+dnorm( d2$height , mu , post.m1$log.sigma[s] , log=TRUE )
+} )
+
+#compute Bayesian deviance lppd
+n_cases <- nrow(d2) 
+lppd.m1 <- sapply( 1:n_cases , function(i) log_sum_exp(ll.m1[i,]) - log(n_samples) )
+
+#m2
+post.m2 <- extract.samples(m2,n=1000)
+n_samples <- 1000
+ll.m2 <- sapply( 1:n_samples ,
+function(s) {
+mu <- post.m2$a[s] + post.m2$b1[s]*d2$age + post.m2$b2[s]*(d2$age^2)
+dnorm( d2$height , mu , post.m2$log.sigma[s] , log=TRUE )
+} )
+n_cases <- nrow(d2) 
+lppd.m2 <- sapply( 1:n_cases , function(i) log_sum_exp(ll.m2[i,]) - log(n_samples)
+                   
+#m3
+post.m3 <- extract.samples(m3,n=1000)
+n_samples <- 1000
+ll.m3 <- sapply( 1:n_samples ,
+function(s) {
+mu <- post.m3$a[s] + post.m3$b1[s]*d2$age + post.m3$b2[s]*(d2$age^2) + post.m3$b3[s]*(d2$age^3)
+dnorm( d2$height , mu , post.m3$log.sigma[s] , log=TRUE )
+} )
+n_cases <- nrow(d2) 
+lppd.m3 <- sapply( 1:n_cases , function(i) log_sum_exp(ll.m3[i,]) - log(n_samples))
+                   
+#m4
+post.m4 <- extract.samples(m4,n=1000)
+n_samples <- 1000
+ll.m4 <- sapply( 1:n_samples ,
+function(s) {
+mu <- post.m4$a[s] + post.m4$b1[s]*d2$age + post.m4$b2[s]*(d2$age^2) + post.m4$b3[s]*(d2$age^3) + post.m4$b4[s]*(d2$age^4)
+dnorm( d2$height , mu , post.m4$log.sigma[s] , log=TRUE )
+} )
+n_cases <- nrow(d2) 
+lppd.m4 <- sapply( 1:n_cases , function(i) log_sum_exp(ll.m4[i,]) - log(n_samples))
+
+#m5
+post.m5 <- extract.samples(m5,n=1000)
+n_samples <- 1000
+ll.m5 <- sapply( 1:n_samples ,
+function(s) {
+mu <- post.m5$a[s] + post.m5$b1[s]*d2$age + post.m5$b2[s]*(d2$age^2) + post.m5$b3[s]*(d2$age^3) + post.m5$b4[s]*(d2$age^4) + post.m5$b5[s]*(d2$age^5)
+dnorm( d2$height , mu , post.m5$log.sigma[s] , log=TRUE )
+} )
+n_cases <- nrow(d2) 
+lppd.m5 <- sapply( 1:n_cases , function(i) log_sum_exp(ll.m5[i,]) - log(n_samples))
+
+#m6
+post.m6 <- extract.samples(m6,n=1000)
+n_samples <- 1000
+ll.m6 <- sapply( 1:n_samples ,
+function(s) {
+mu <- post.m6$a[s] + post.m6$b1[s]*d2$age + post.m6$b2[s]*(d2$age^2) + post.m6$b3[s]*(d2$age^3) + post.m6$b4[s]*(d2$age^4) + post.m6$b5[s]*(d2$age^5) + post.m6$b6[s]*(d2$age^6)
+dnorm( d2$height , mu , post.m6$log.sigma[s] , log=TRUE )
+} )
+n_cases <- nrow(d2) 
+lppd.m6 <- sapply( 1:n_cases , function(i) log_sum_exp(ll.m6[i,]) - log(n_samples))
+
+sum(lppd.m1)                   
+sum(lppd.m2)
+sum(lppd.m3)
+sum(lppd.m4)
+sum(lppd.m5)
+sum(lppd.m6)
 
 #6H5
+Dev.m1 <- sum(lppd.m1) - sum(lppd.m6)
+Dev.m2 <- sum(lppd.m2) - sum(lppd.m6)
+Dev.m3 <- sum(lppd.m3) - sum(lppd.m6)
+Dev.m4 <- sum(lppd.m4) - sum(lppd.m6)
+Dev.m5 <- sum(lppd.m5) - sum(lppd.m6)
+Dev.m6 <- sum(lppd.m6) - sum(lppd.m6)
 
-#6H6
+WAIC.m1 <- 2395.4 - 1926.1
+WAIC.m2 <- 2150.2 - 1926.1
+WAIC.m3 <- 1952.7 - 1926.1
+WAIC.m4 <- 1926.1 - 1926.1
+WAIC.m5 <- 1927.5 - 1926.1
+WAIC.m6 <- 1927.7 - 1926.1
+
+Dev.m1; Dev.m2; Dev.m3; Dev.m4; Dev.m5; Dev.m6
+WAIC.m1; WAIC.m2; WAIC.m3; WAIC.m4; WAIC.m5; WAIC.m6
+```
+
+##6H1
+
+model rankings:  m4 > m5 = m6 > m3 > m2 > m1
+
+WAIC weights: 
+- m4 = 0.58
+- m5 = 0.21
+- m6 = 0.21
+- m1, m2, m3 = 0
+
+## 6H2
+Model 1 and model 2 fit the data poorly; models 4 through 6 predict the data reasonably well. The PI is high over age 2.
+
+## 6H3
+The averaged predictions have a narrower PI than the highest WAIC model, particularly in the data-sparse region with high ages. There's a little less "wiggle" to the prediction (inflection?).
+
+## 6H4
+Compute the test-sample deviance for each model. This means calculating deviance, but using
+the data in d2 now. 
+
+
+## 6H5
+Model 6 makes the best out-of-sample predictions. WAIC doesn't seem highly accurate.
+
+## 6H6
+```{r}
 m6h6 <- map(
   alist(
-   height ~ dnorm( mu , exp(log.sigma) ) ,
+   height ~ dnorm( mu , sigma ) ,
     mu <- a + b1*age + b2*(age^2) + b3*(age^3) + b4*(age^4) + b5*(age^5) + b6*(age^6)
   ),
   b1 ~ dnorm( 0 , 5 ) ,
@@ -162,30 +279,12 @@ m6h6 <- map(
   b4 ~ dnorm( 0 , 5 ) ,
   b5 ~ dnorm( 0 , 5 ) ,
   b6 ~ dnorm( 0 , 5 ) ,
-  data=d , start=list(a=a.start,log.sigma=sigma.start) )
+  sigma ~ dunif( 0 , 50 ),
+  a ~ dunif( 0 , 50 ),
+  data=d1 )
 ```
 
-##6H1
-
-model rankings:  m4 > m6 > m5 > m3 = m2 = m1
-
-WAIC weights: 
-- m4 = 0.42
-- m6 = 0.36
-- m5 = 0.21
-- m1, m2, m3 = 0
-
-## 6H2
-Model 1 and model 2 fit the data poorly; models 4 through 6 predict the data reasonably well.
-
-## 6H3
-The averaged predictions have a narrower PI than the highest WAIC model, particularly in the data-sparse region with high ages.
-
-## 6H4
-Compute the test-sample deviance for each model. This means calculating deviance, but using
-the data in d2 now. 
-
-
-## 6H5
-
-## 6H6
+Fit model to d1.
+Report MAP estimates, plot predictions.
+Compute out-of-sample deviance using d2
+How does this compare to best WAIC from earlier?
