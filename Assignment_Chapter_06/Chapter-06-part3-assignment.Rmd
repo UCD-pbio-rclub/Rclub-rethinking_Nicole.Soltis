@@ -3,15 +3,20 @@ title: "Chapter-06-part3-assingment"
 author: "Nicole E Soltis"
 date: "May 23, 2016"
 output: html_document
+keep_md: yes
 ---
 
 ## 6M2
-Model selection: use information criteria to select the model with the most weight - as it will on average make better predictions.
-Model averaging: preserve multiple models and uncertainty about models as determined by information criteria - avoid overconfidence in our predictions.
+Model selection: use information criteria to select the model with the most weight - as it will on average make better predictions. Lose some inference from alternative models
 
-## 6M4 ??
-What happens to the effective number of parameters, as measured by DIC or WAIC, as a prior
-becomes more concentrated? Why? Perform some experiments, if you are not sure.
+Model averaging: preserve multiple models and uncertainty about models as determined by information criteria - avoid overconfidence in our predictions. Lose precision/ certainty of a single model? Lose confidence in the prediction?
+
+## 6M3
+Summing observations - model looks better by default if you have less to predict.
+
+## 6M4
+Effective number of parameters becomes smaller as prior becomes more concentrated.
+Does not affect WAIC much. To test: set narrower sd.
 
 ## 6HARD
 Howell !Kung demography
@@ -37,64 +42,109 @@ m1 <- map(
     height ~ dnorm( mu , sigma ),
     mu <- a + b1*age,
     a ~ dnorm(mean(height),50),
-    sigma ~ dunif(0,50)
+    sigma ~ dunif(0,50),
+    b1 ~ dnorm(0,10)
   ) ,
-  data=d1, start=list(b1=0))
+  data=d1)
 #second order model
 m2 <- map(
   alist(
    height ~ dnorm( mu , sigma ) ,
     mu <- a + b1*age + b2*(age^2),
-  a ~ dnorm(mean(height),50),
-    sigma ~ dunif(0,50)
+    a ~ dnorm(mean(height),50),
+    sigma ~ dunif(0,50),
+     b1 ~ dnorm(0,10),
+     b2 ~ dnorm(0,10)
   ) ,
-  data=d1, start=list(b1=0, b2=0))
+  data=d1)
 #third order model
 m3 <- map(
   alist(
    height ~ dnorm( mu , sigma ) ,
     mu <- a + b1*age + b2*(age^2) + b3*(age^3),
   a ~ dnorm(mean(height),50),
-    sigma ~ dunif(0,50)
+    sigma ~ dunif(0,50),
+     c(b1, b2, b3) ~ dnorm(0,10)
   ) ,
-  data=d1, start=list(b1=0, b2=0, b3=0))
+  data=d1)
 #fourth order model
 m4 <- map(
   alist(
    height ~ dnorm( mu , sigma ) ,
     mu <- a + b1*age + b2*(age^2) + b3*(age^3) + b4*(age^4),
   a ~ dnorm(mean(height),50),
-    sigma ~ dunif(0,50)
+    sigma ~ dunif(0,50),
+       c(b1, b2, b3, b4) ~ dnorm(0,10)
   ) ,
-  data=d1, start=list(b1=0, b2=0, b3=0, b4=0))
+  data=d1)
 #fifth order model
 m5 <- map(
   alist(
    height ~ dnorm( mu , sigma ) ,
     mu <- a + b1*age + b2*(age^2) + b3*(age^3) + b4*(age^4) + b5*(age^5),
   a ~ dnorm(mean(height),50),
-    sigma ~ dunif(0,50)
+    sigma ~ dunif(0,50),
+       c(b1, b2, b3, b4, b5) ~ dnorm(0,10)
   ) ,
-  data=d1, start=list(b1=0, b2=0, b3=0, b4=0, b5=0))
+  data=d1)
 #sixth order model
 m6 <- map(
   alist(
    height ~ dnorm( mu , sigma ) ,
     mu <- a + b1*age + b2*(age^2) + b3*(age^3) + b4*(age^4) + b5*(age^5) + b6*(age^6),
   a ~ dnorm(mean(height),50),
-    sigma ~ dunif(0,50)
+    sigma ~ dunif(0,50),
+   c(b1, b2, b3, b4, b5, b6) ~ dnorm(0,10)
   ) ,
-  data=d1, start=list(b1=0, b2=0, b3=0, b4=0, b5=0, b6=0))
+  data=d1)
 
 #6H1
 compare(m1,m2,m3,m4,m5,m6)
+#can look at dWAIC for differences in WAIC vs. best model (lowest WAIC)
+```
 
-#6H2
-ag.seq <- seq(from=-1.45,to=2.61,length.out=30)
+model rankings:  m4 > m6 > m5 > m3 > m2 > m1
+
+WAIC weights: 
+
+- m4 = 0.57
+- m6 = 0.22
+- m5 = 0.21
+- m1, m2, m3 = 0
+
+##6H2
+```{r results='hide'}
+ag.seq <- seq(from=-2,to=3.5,length.out=30)
 d.predict <- list(
   height = rep(0,30), # empty outcome
   age = ag.seq
 )
+
+#can make a for loop from Julin's script!
+pred.df <- data.frame(age=seq(-2,3.5, length.out=50))
+#```{r results = 'hide'} #will print plots but not text results
+#knitr::opts_chunk$set(cache=T, autodep=T) #this way knitr doesn't have to rerun chunks if unchanged
+for(model in ls(pattern="^m[1-6]$")){
+  #the inverse of get is assign
+  pred.M <- link(get(model), data=pred.df)
+  mu <- apply(pred.M, 2, mean)
+  mu.PI <- apply(pred.M, 2, PI, prob=0.97)
+  #in for loops, often need to include print() to get things to show up as output
+  print(plot(d1$height~d1$age, xlim=range(pred.df$age), ylim=range(c(mu,d1$height)),
+             main=model, col=rangi2))
+  print(lines(mu~pred.df$age))
+  print(lines(mu.PI[1,] ~ pred.df$age, lty=2))
+  print(lines(mu.PI[2,] ~ pred.df$age, lty=2))
+}
+
+#example of assign and get ... use fewer lines of code!
+a <- 1
+my.object.name <- "a"
+my.object.name
+get(my.object.name)
+assign(my.object.name, "cat")
+
+
 #m1
 pred.6h2.m1 <- link( m1 , data=d.predict )
 mu.m1 <- apply( pred.6h2.m1 , 2 , mean )
@@ -144,18 +194,48 @@ mu.PI.m6 <- apply( pred.6h2.m6 , 2 , function(x) PI(x, prob=0.97) )
 plot( height ~ age , d1 , col=rangi2 )
 lines( ag.seq , mu.m6 , lty=2 )
 shade(mu.PI.m6, ag.seq)
+```
 
-#6H3
+Model 1 and model 2 fit the data poorly; models 4 through 6 predict the data reasonably well. The PI is high over age 2.
+
+##6H3
+```{r results='hide'}
 d1.ensemble <- ensemble( m1 , m2 , m3 , m4 , m5, m6, data=d.predict )
 mu.6h3 <- apply( d1.ensemble$link , 2 , mean )
 mu.PI.6h3 <- apply( d1.ensemble$link , 2 , PI )
-plot( height ~ age , d1 , col=rangi2 )
+plot( height ~ age , d1 , col=rangi2, xlim=c(-2,4))
 lines( ag.seq , mu.6h3 )
 shade( mu.PI.6h3 , ag.seq )
+```
+The averaged predictions have a narrower PI than the highest WAIC model, particularly in the data-sparse region with high ages. There's a little less "wiggle" to the prediction (inflection?).
 
-#6H4
-#compute test-sample deviance for each model
-#calculate deviance using data in d2
+##6H4
+Compute the test-sample deviance for each model. This means calculating deviance, but using the data in d2 now. 
+
+```{r}
+#see R code 6.11 in the book for in-sample
+#Julin's method: use a loop again
+models <- ls(pattern="^m[1-6]$")
+test.dev <- sapply(models, function(m){
+  model <- get(m)
+  input <- as.list(coef(model))
+  input$age <- d2$age
+  #str(m5)
+  #equations as we wrote them are stored by MAP
+  #last slot (@) is links
+  #m5@links
+  #m5@links[[1]]
+  #m5@links[[1]][[2]]
+  equation <- model@links[[1]][[2]]
+  #parse: take out of character string into an equation
+  #evaluate the equation == calculate with a, b1, age
+  mu <- eval(parse(text=equation), envir = input)
+  dev <- -2*sum(dnorm(d2$height, mu, input$sigma, log=T))
+  dev
+})
+test.dev
+
+#my method below
 #m1
 post.m1 <- extract.samples(m1,n=1000)
 
@@ -232,8 +312,10 @@ sum(lppd.m3)
 sum(lppd.m4)
 sum(lppd.m5)
 sum(lppd.m6)
+```
 
 #6H5
+```{r}
 Dev.m1 <- sum(lppd.m1) - sum(lppd.m6)
 Dev.m2 <- sum(lppd.m2) - sum(lppd.m6)
 Dev.m3 <- sum(lppd.m3) - sum(lppd.m6)
@@ -251,30 +333,7 @@ WAIC.m6 <- 1927.7 - 1926.1
 Dev.m1; Dev.m2; Dev.m3; Dev.m4; Dev.m5; Dev.m6
 WAIC.m1; WAIC.m2; WAIC.m3; WAIC.m4; WAIC.m5; WAIC.m6
 ```
-
-##6H1
-
-model rankings:  m4 > m5 = m6 > m3 > m2 > m1
-
-WAIC weights: 
-- m4 = 0.56
-- m6 = 0.22
-- m5 = 0.21
-- m1, m2, m3 = 0
-
-## 6H2
-Model 1 and model 2 fit the data poorly; models 4 through 6 predict the data reasonably well. The PI is high over age 2.
-
-## 6H3
-The averaged predictions have a narrower PI than the highest WAIC model, particularly in the data-sparse region with high ages. There's a little less "wiggle" to the prediction (inflection?).
-
-## 6H4
-Compute the test-sample deviance for each model. This means calculating deviance, but using
-the data in d2 now. 
-
-
-## 6H5
-Model 6 makes the best out-of-sample predictions. WAIC doesn't seem highly accurate.
+Model 6 makes the best out-of-sample predictions. WAIC is failry accurate, but true test deviance is a bit higher.
 
 ## 6H6
 ```{r}
@@ -282,18 +341,13 @@ m6h6 <- map(
   alist(
    height ~ dnorm( mu , sigma ) ,
     mu <- a + b1*age + b2*(age^2) + b3*(age^3) + b4*(age^4) + b5*(age^5) + b6*(age^6),
-  b1 ~ dnorm( 0 , 5 ) ,
-  b2 ~ dnorm( 0 , 5 ) ,
-  b3 ~ dnorm( 0 , 5 ) ,
-  b4 ~ dnorm( 0 , 5 ) ,
-  b5 ~ dnorm( 0 , 5 ) ,
-  b6 ~ dnorm( 0 , 5 ) ,
+  c(b1,b2,b3,b4,b5,b6) ~ dnorm( 0 , 5 ) ,
   sigma ~ dunif( 0 , 50 ),
   a ~ dnorm( mean(height) , 50 )),
   data=d1 )
 
 #plot predictions
-ag.seq <- seq(from=-1.45,to=2.61,length.out=30)
+ag.seq <- seq(from=-2,to=3,length.out=30)
 d.predict <- list(
   height = rep(0,30), # empty outcome
   age = ag.seq
@@ -301,9 +355,11 @@ d.predict <- list(
 pred.m6h6 <- link(m6h6, data=d.predict)
 mu.m6h6 <- apply(pred.m6h6, 2, mean)
 mu.PI.m6h6 <- apply(pred.m6h6, 2, function(x) PI(x, prob=0.97))
-plot(height~age, d1, col=rangi2)
+plot(height~age, d1, col=rangi2, xlim=c(-2,3))
 lines(ag.seq, mu.m6h6, lty=2)
 shade(mu.PI.m6h6, ag.seq)
+
+#model 7 does better outside of range than model 6 did: shrinks priors for p5 & p6
 
 #compute out-of-sample deviance
 post.m6h6 <- extract.samples(m6h6,n=1000)
@@ -321,3 +377,5 @@ sum(lppd.m6h6)
 ```
 
 slightly better than best WAIC from earlier.
+Regularizing priors: can do at least as well as model 4 (previously the best model)
+Could try: computing deviance
