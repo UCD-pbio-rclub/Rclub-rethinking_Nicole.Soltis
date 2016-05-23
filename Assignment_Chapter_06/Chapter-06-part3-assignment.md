@@ -1,11 +1,6 @@
----
-title: "Chapter-06-part3-assingment"
-author: "Nicole E Soltis"
-date: "May 23, 2016"
-output: 
-  html_document: 
-    keep_md: yes
----
+# Chapter-06-part3-assingment
+Nicole E Soltis  
+May 23, 2016  
 
 ## 6M2
 Model selection: use information criteria to select the model with the most weight - as it will on average make better predictions. Lose some inference from alternative models
@@ -26,8 +21,38 @@ data and split it into two equally sized data frames
 two randomly formed data frames, each with 272 rows
 use the cases in d1 to fit models and the cases in d2 to evaluate them
 
-```{r}
+
+```r
 library(rethinking)
+```
+
+```
+## Loading required package: rstan
+```
+
+```
+## Loading required package: ggplot2
+```
+
+```
+## rstan (Version 2.9.0-3, packaged: 2016-02-11 15:54:41 UTC, GitRev: 05c3d0058b6a)
+```
+
+```
+## For execution on a local, multicore CPU with excess RAM we recommend calling
+## rstan_options(auto_write = TRUE)
+## options(mc.cores = parallel::detectCores())
+```
+
+```
+## Loading required package: parallel
+```
+
+```
+## rethinking (Version 1.58)
+```
+
+```r
 data(Howell1)
 d <- Howell1
 d$age <- (d$age - mean(d$age))/sd(d$age)
@@ -37,6 +62,13 @@ d1 <- d[ i , ]
 d2 <- d[ -i , ]
 
 names(d1)
+```
+
+```
+## [1] "height" "weight" "age"    "male"
+```
+
+```r
 #first order model
 m1 <- map(
   alist(
@@ -101,6 +133,19 @@ m6 <- map(
 
 #6H1
 compare(m1,m2,m3,m4,m5,m6)
+```
+
+```
+##      WAIC pWAIC dWAIC weight    SE   dSE
+## m4 1926.0   5.6   0.0   0.59 25.46    NA
+## m5 1927.8   6.5   1.8   0.24 25.59  0.39
+## m6 1928.4   7.4   2.4   0.18 25.14  1.90
+## m3 1952.3   5.4  26.3   0.00 24.20 11.04
+## m2 2150.0   5.1 224.0   0.00 22.80 26.78
+## m1 2395.3   3.3 469.3   0.00 23.14 31.05
+```
+
+```r
 #can look at dWAIC for differences in WAIC vs. best model (lowest WAIC)
 ```
 
@@ -114,7 +159,8 @@ WAIC weights:
 - m1, m2, m3 = 0
 
 ##6H2
-```{r results='hide'}
+
+```r
 ag.seq <- seq(from=-2,to=3.5,length.out=30)
 d.predict <- list(
   height = rep(0,30), # empty outcome
@@ -137,7 +183,11 @@ for(model in ls(pattern="^m[1-6]$")){
   print(lines(mu.PI[1,] ~ pred.df$age, lty=2))
   print(lines(mu.PI[2,] ~ pred.df$age, lty=2))
 }
+```
 
+![](Chapter-06-part3-assignment_files/figure-html/unnamed-chunk-2-1.png)![](Chapter-06-part3-assignment_files/figure-html/unnamed-chunk-2-2.png)![](Chapter-06-part3-assignment_files/figure-html/unnamed-chunk-2-3.png)![](Chapter-06-part3-assignment_files/figure-html/unnamed-chunk-2-4.png)![](Chapter-06-part3-assignment_files/figure-html/unnamed-chunk-2-5.png)![](Chapter-06-part3-assignment_files/figure-html/unnamed-chunk-2-6.png)
+
+```r
 #example of assign and get ... use fewer lines of code!
 a <- 1
 my.object.name <- "a"
@@ -155,7 +205,11 @@ plot( height ~ age , d1 , col=rangi2 )
 #dashed regression line
 lines( ag.seq , mu.m1 , lty=2 )
 shade(mu.PI.m1, ag.seq)
+```
 
+![](Chapter-06-part3-assignment_files/figure-html/unnamed-chunk-2-7.png)
+
+```r
 #m2
 pred.6h2.m2 <- link( m2 , data=d.predict )
 mu.m2 <- apply( pred.6h2.m2 , 2 , mean )
@@ -163,7 +217,11 @@ mu.PI.m2 <- apply( pred.6h2.m2 , 2, function(x) PI(x, prob=0.97) )
 plot( height ~ age , d1 , col=rangi2 )
 lines( ag.seq , mu.m2 , lty=2 )
 shade(mu.PI.m2, ag.seq)
+```
 
+![](Chapter-06-part3-assignment_files/figure-html/unnamed-chunk-2-8.png)
+
+```r
 #m3
 pred.6h2.m3 <- link( m3 , data=d.predict )
 mu.m3 <- apply( pred.6h2.m3 , 2 , mean )
@@ -171,7 +229,11 @@ mu.PI.m3 <- apply( pred.6h2.m3 , 2, function(x) PI(x, prob=0.97) )
 plot( height ~ age , d1 , col=rangi2 )
 lines( ag.seq , mu.m3 , lty=2 )
 shade(mu.PI.m3, ag.seq)
+```
 
+![](Chapter-06-part3-assignment_files/figure-html/unnamed-chunk-2-9.png)
+
+```r
 #m4
 pred.6h2.m4 <- link( m4 , data=d.predict )
 mu.m4 <- apply( pred.6h2.m4 , 2 , mean )
@@ -179,7 +241,11 @@ mu.PI.m4 <- apply( pred.6h2.m4 , 2, function(x) PI(x, prob=0.97) )
 plot( height ~ age , d1 , col=rangi2 )
 lines( ag.seq , mu.m4 , lty=2 )
 shade(mu.PI.m4, ag.seq)
+```
 
+![](Chapter-06-part3-assignment_files/figure-html/unnamed-chunk-2-10.png)
+
+```r
 #m5
 pred.6h2.m5 <- link( m5 , data=d.predict )
 mu.m5 <- apply( pred.6h2.m5 , 2 , mean )
@@ -187,7 +253,11 @@ mu.PI.m5 <- apply( pred.6h2.m5 , 2, function(x) PI(x, prob=0.97) )
 plot( height ~ age , d1 , col=rangi2 )
 lines( ag.seq , mu.m5 , lty=2 )
 shade(mu.PI.m5, ag.seq)
+```
 
+![](Chapter-06-part3-assignment_files/figure-html/unnamed-chunk-2-11.png)
+
+```r
 #m6
 pred.6h2.m6 <- link( m6 , data=d.predict )
 mu.m6 <- apply( pred.6h2.m6 , 2 , mean )
@@ -197,23 +267,41 @@ lines( ag.seq , mu.m6 , lty=2 )
 shade(mu.PI.m6, ag.seq)
 ```
 
+![](Chapter-06-part3-assignment_files/figure-html/unnamed-chunk-2-12.png)
+
 Model 1 and model 2 fit the data poorly; models 4 through 6 predict the data reasonably well. The PI is high over age 2.
 
 ##6H3
-```{r results='hide'}
+
+```r
 d1.ensemble <- ensemble( m1 , m2 , m3 , m4 , m5, m6, data=d.predict )
+```
+
+```
+## Constructing posterior predictions
+## Constructing posterior predictions
+## Constructing posterior predictions
+## Constructing posterior predictions
+## Constructing posterior predictions
+## Constructing posterior predictions
+```
+
+```r
 mu.6h3 <- apply( d1.ensemble$link , 2 , mean )
 mu.PI.6h3 <- apply( d1.ensemble$link , 2 , PI )
 plot( height ~ age , d1 , col=rangi2, xlim=c(-2,4))
 lines( ag.seq , mu.6h3 )
 shade( mu.PI.6h3 , ag.seq )
 ```
+
+![](Chapter-06-part3-assignment_files/figure-html/unnamed-chunk-3-1.png)
 The averaged predictions have a narrower PI than the highest WAIC model, particularly in the data-sparse region with high ages. There's a little less "wiggle" to the prediction (inflection?).
 
 ##6H4
 Compute the test-sample deviance for each model. This means calculating deviance, but using the data in d2 now. 
 
-```{r}
+
+```r
 #see R code 6.11 in the book for in-sample
 #Julin's method: use a loop again
 models <- ls(pattern="^m[1-6]$")
@@ -235,7 +323,14 @@ test.dev <- sapply(models, function(m){
   dev
 })
 test.dev
+```
 
+```
+##       m1       m2       m3       m4       m5       m6 
+## 2422.308 2138.064 1932.347 1876.231 1876.585 1875.830
+```
+
+```r
 #my method below
 #m1
 post.m1 <- extract.samples(m1,n=1000)
@@ -308,15 +403,55 @@ n_cases <- nrow(d2)
 lppd.m6 <- sapply( 1:n_cases , function(i) log_sum_exp(ll.m6[i,]) - log(n_samples))
 
 sum(lppd.m1)                   
+```
+
+```
+## [1] -1210.769
+```
+
+```r
 sum(lppd.m2)
+```
+
+```
+## [1] -1068.142
+```
+
+```r
 sum(lppd.m3)
+```
+
+```
+## [1] -964.0675
+```
+
+```r
 sum(lppd.m4)
+```
+
+```
+## [1] -938.7431
+```
+
+```r
 sum(lppd.m5)
+```
+
+```
+## [1] -939.1857
+```
+
+```r
 sum(lppd.m6)
 ```
 
+```
+## [1] -938.4131
+```
+
 #6H5
-```{r}
+
+```r
 Dev.m1 <- sum(lppd.m1) - sum(lppd.m6)
 Dev.m2 <- sum(lppd.m2) - sum(lppd.m6)
 Dev.m3 <- sum(lppd.m3) - sum(lppd.m6)
@@ -332,12 +467,64 @@ WAIC.m5 <- 1927.5 - 1926.1
 WAIC.m6 <- 1927.7 - 1926.1
 
 Dev.m1; Dev.m2; Dev.m3; Dev.m4; Dev.m5; Dev.m6
+```
+
+```
+## [1] -272.3557
+```
+
+```
+## [1] -129.7285
+```
+
+```
+## [1] -25.6544
+```
+
+```
+## [1] -0.3300621
+```
+
+```
+## [1] -0.7726045
+```
+
+```
+## [1] 0
+```
+
+```r
 WAIC.m1; WAIC.m2; WAIC.m3; WAIC.m4; WAIC.m5; WAIC.m6
+```
+
+```
+## [1] 469.3
+```
+
+```
+## [1] 224.1
+```
+
+```
+## [1] 26.6
+```
+
+```
+## [1] 0
+```
+
+```
+## [1] 1.4
+```
+
+```
+## [1] 1.6
 ```
 Model 6 makes the best out-of-sample predictions. WAIC is failry accurate, but true test deviance is a bit higher.
 
 ## 6H6
-```{r}
+
+```r
 m6h6 <- map(
   alist(
    height ~ dnorm( mu , sigma ) ,
@@ -354,12 +541,32 @@ d.predict <- list(
   age = ag.seq
 )
 pred.m6h6 <- link(m6h6, data=d.predict)
+```
+
+```
+## [ 100 / 1000 ]
+[ 200 / 1000 ]
+[ 300 / 1000 ]
+[ 400 / 1000 ]
+[ 500 / 1000 ]
+[ 600 / 1000 ]
+[ 700 / 1000 ]
+[ 800 / 1000 ]
+[ 900 / 1000 ]
+[ 1000 / 1000 ]
+```
+
+```r
 mu.m6h6 <- apply(pred.m6h6, 2, mean)
 mu.PI.m6h6 <- apply(pred.m6h6, 2, function(x) PI(x, prob=0.97))
 plot(height~age, d1, col=rangi2, xlim=c(-2,3))
 lines(ag.seq, mu.m6h6, lty=2)
 shade(mu.PI.m6h6, ag.seq)
+```
 
+![](Chapter-06-part3-assignment_files/figure-html/unnamed-chunk-6-1.png)
+
+```r
 #model 7 does better outside of range than model 6 did: shrinks priors for p5 & p6
 
 #compute out-of-sample deviance
@@ -374,7 +581,10 @@ n_cases <- nrow(d2)
 lppd.m6h6 <- sapply( 1:n_cases , function(i) log_sum_exp(ll.m6h6[i,]) - log(n_samples))
 
 sum(lppd.m6h6)  
+```
 
+```
+## [1] -938.4658
 ```
 
 slightly better than best WAIC from earlier.
