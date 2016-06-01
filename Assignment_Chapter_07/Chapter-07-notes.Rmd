@@ -1,0 +1,207 @@
+---
+title: "Chapter-07-notes"
+author: "Nicole E Soltis"
+date: "May 23, 2016"
+output: 
+  html_document: 
+    keep_md: yes
+---
+```{r}
+#7.1
+#data on terrain ruggedness in Africa vs. other continents
+#regression: rugged (~ bad geography) against log GDP per capita
+library(rethinking)
+data(rugged)
+d <- rugged
+# make log version of outcome
+d$log_gdp <- log( d$rgdppc_2000 )
+# extract countries with GDP data
+dd <- d[ complete.cases(d$rgdppc_2000) , ]
+# split countries into Africa and not-Africa
+d.A1 <- dd[ dd$cont_africa==1 , ] # Africa
+d.A0 <- dd[ dd$cont_africa==0 , ] # not Africa
+
+#7.2 fit the regression models
+# African nations
+m7.1 <- map(
+  alist(
+   log_gdp ~ dnorm( mu , sigma ) ,
+   mu <- a + bR*rugged ,
+   a ~ dnorm( 8 , 100 ) ,
+   bR ~ dnorm( 0 , 1 ) ,
+   sigma ~ dunif( 0 , 10 )
+  ) ,
+data=d.A1 )
+# non-African nations
+m7.2 <- map(
+alist(
+log_gdp ~ dnorm( mu , sigma ) ,
+mu <- a + bR*rugged ,
+a ~ dnorm( 8 , 100 ) ,
+bR ~ dnorm( 0 , 1 ) ,
+sigma ~ dunif( 0 , 10 )
+) ,
+data=d.A0 )
+
+#plot the posterior predictions
+rug.seq <- seq(from=-1,to=6,length.out=30)
+d.predict.7.2 <- list(
+  log_gdp = rep(0,30), # empty outcome
+  rugged = rug.seq
+)
+
+#non-African nations
+pred.7.2 <- link( m7.2 , data=d.predict.7.2 )
+mu.7.2 <- apply( pred.7.2 , 2 , mean )
+mu.PI.7.2 <- apply( pred.7.2 , 2, function(x) PI(x, prob=0.97) )
+# plot it all
+plot( log_gdp ~ rugged , d.A0 , col=rangi2 )
+#dashed regression line
+lines( rug.seq , mu.7.2 , lty=2 )
+shade(mu.PI.7.2, rug.seq)
+
+#African nations
+pred.7.1 <- link( m7.1 , data=d.predict.7.2 )
+mu.7.1 <- apply( pred.7.1 , 2 , mean )
+mu.PI.7.1 <- apply( pred.7.1 , 2, function(x) PI(x, prob=0.97) )
+plot( log_gdp ~ rugged , d.A1 , col=rangi2 )
+lines( rug.seq , mu.7.1 , lty=2 )
+shade(mu.PI.7.1, rug.seq)
+
+#7.3
+#how much does singling out nations in Africa change predictions?
+#linear regression of log_gdp on ruggedness for entire data set
+m7.3 <- map(
+alist(
+log_gdp ~ dnorm( mu , sigma ) ,
+mu <- a + bR*rugged ,
+a ~ dnorm( 8 , 100 ) ,
+bR ~ dnorm( 0 , 1 ) ,
+sigma ~ dunif( 0 , 10 )
+) ,
+data=dd )
+
+#7.4
+#same model but including a dummy variable (slope bA) for nation
+m7.4 <- map(
+alist(
+log_gdp ~ dnorm( mu , sigma ) ,
+mu <- a + bR*rugged + bA*cont_africa ,
+a ~ dnorm( 8 , 100 ) ,
+bR ~ dnorm( 0 , 1 ) ,
+bA ~ dnorm( 0 , 1 ) ,
+sigma ~ dunif( 0 , 10 )
+) ,
+data=dd )
+
+#7.5 
+#compare these models with WAIC
+compare( m7.3 , m7.4 )
+#m7.4 gets all the weight- can ignore m7.3
+
+#7.6
+#plot the posterior predictions for m7.4
+#sample from the posterior and compute the predicted means and intervals
+rugged.seq <- seq(from=-1,to=8,by=0.25)
+# compute mu over samples, fixing cont_africa=0
+mu.NotAfrica <- link( m7.4 , data=data.frame(cont_africa=0,rugged=rugged.seq) )
+# compute mu over samples, fixing cont_africa=1
+mu.Africa <- link( m7.4 , data=data.frame(cont_africa=1,rugged=rugged.seq) )
+# summarize to means and intervals
+mu.NotAfrica.mean <- apply( mu.NotAfrica , 2 , mean )
+mu.NotAfrica.PI <- apply( mu.NotAfrica , 2 , PI , prob=0.97 )
+mu.Africa.mean <- apply( mu.Africa , 2 , mean )
+mu.Africa.PI <- apply( mu.Africa , 2 , PI , prob=0.97 )
+#all this has done is allow a unique mean prediction (regression mean) depending on the dummy variable cont_africa. It does not allow unique slopes.
+
+#7.7
+#fit a new model including an interaction between ruggedness and continent
+m7.5 <- map(
+alist(
+log_gdp ~ dnorm( mu , sigma ) ,
+mu <- a + gamma*rugged + bA*cont_africa ,
+#model the slope of ruggedness AS A LINEAR MODEL
+#in which slope is conditional upon continent
+gamma <- bR + bAR*cont_africa ,
+#very flat prior for the intercept
+#intercept can be regularized by the priors
+a ~ dnorm( 8 , 100 ) ,
+#weakly regularizing priors for the coefficients
+bA ~ dnorm( 0 , 1 ) ,
+bR ~ dnorm( 0 , 1 ) ,
+bAR ~ dnorm( 0 , 1 ) ,
+sigma ~ dunif( 0 , 10 )
+) ,
+data=dd )
+#gamma gets evaluated first, then plugged into mu, then likelihood is computed
+
+#7.8
+#compare model with linear interaction to the previous two models
+compare( m7.3 , m7.4 , m7.5 )
+#STRONG support for including the interaction fx (model has 96% of weight)
+#but: some weight to 7.4: suggests posterior means of slopes are slightly overfit
+#SE of difference in top 2 models ~ same
+
+#7.9
+#can multiply out interaction effects so that there is only one model
+#equivalent to model 7.5 above
+#and this is more similar to lm() notation
+m7.5b <- map(
+alist(
+log_gdp ~ dnorm( mu , sigma ) ,
+mu <- a + bR*rugged + bAR*rugged*cont_africa + bA*cont_africa,
+a ~ dnorm( 8 , 100 ) ,
+bA ~ dnorm( 0 , 1 ) ,
+bR ~ dnorm( 0 , 1 ) ,
+bAR ~ dnorm( 0 , 1 ) ,
+sigma ~ dunif( 0 , 10 )
+) ,
+data=dd )
+
+#7.10
+#calculate posterior mean line and interval for Africa & not-Africa plots
+rugged.seq <- seq(from=-1,to=8,by=0.25) 
+mu.Africa <- link( m7.5 , data=data.frame(cont_africa=1,rugged=rugged.seq) )
+mu.Africa.mean <- apply( mu.Africa , 2 , mean )
+mu.Africa.PI <- apply( mu.Africa , 2 , PI , prob=0.97 )
+mu.NotAfrica <- link( m7.5 , data=data.frame(cont_africa=0,rugged=rugged.seq) )
+mu.NotAfrica.mean <- apply( mu.NotAfrica , 2 , mean )
+mu.NotAfrica.PI <- apply( mu.NotAfrica , 2 , PI , prob=0.97 )
+
+#7.11
+# plot African nations with regression
+#overlay: posterior mean (MAP) regression line
+#97% interval of regression line
+d.A1 <- dd[dd$cont_africa==1,]
+plot( log(rgdppc_2000) ~ rugged , data=d.A1 ,
+col=rangi2 , ylab="log GDP year 2000" ,
+xlab="Terrain Ruggedness Index" )
+mtext( "African nations" , 3 )
+lines( rugged.seq , mu.Africa.mean , col=rangi2 )
+shade( mu.Africa.PI , rugged.seq , col=col.alpha(rangi2,0.3) )
+# plot non-African nations with regression
+d.A0 <- dd[dd$cont_africa==0,]
+plot( log(rgdppc_2000) ~ rugged , data=d.A0 ,
+col="black" , ylab="log GDP year 2000" ,
+xlab="Terrain Ruggedness Index" )
+mtext( "Non-African nations" , 3 )
+lines( rugged.seq , mu.NotAfrica.mean )
+shade( mu.NotAfrica.PI , rugged.seq )
+
+#7.12
+precis(m7.5)
+#have to get a point-estimate gamma by hand (bR + bAR(1) in Africa, bR + bAR(0) outside)
+
+#7.13
+#process samples from the posterior to compute the posterior distribution of gamma
+post <- extract.samples( m7.5 )
+gamma.Africa <- post$bR + post$bAR*1
+gamma.notAfrica <- post$bR + post$bAR*0
+
+#7.14
+#get means of these distributions
+mean( gamma.Africa)
+mean( gamma.notAfrica )
+```
+
+
