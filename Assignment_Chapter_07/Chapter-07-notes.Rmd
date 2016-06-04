@@ -199,9 +199,213 @@ gamma.Africa <- post$bR + post$bAR*1
 gamma.notAfrica <- post$bR + post$bAR*0
 
 #7.14
-#get means of these distributions
+#get means of these distributions: same as 7.12
+# ~= MAP values
 mean( gamma.Africa)
 mean( gamma.notAfrica )
+
+#7.15
+#plot full distributions of slopes by region -- on one axis to visualize overlap
+#inside Africa: blue
+dens( gamma.Africa , xlim=c(-0.5,0.6) , ylim=c(0,5.5) ,
+xlab="gamma" , col=rangi2 )
+dens( gamma.notAfrica , add=TRUE )
+
+#7.16 
+#compute probability that slope within Africa is less than slope outside?
+#compute difference between slopes for each sample in posterior
+diff <- gamma.Africa - gamma.notAfrica
+#what proportion of differences below zero?
+sum( diff < 0 ) / length( diff )
+#so, highly unlikely that slope associating ruggedness with log-GDP is lower inside Africa
+
+#7.17 
+#try reverse interpretation
+# get minimum and maximum rugged values
+q.rugged <- range(dd$rugged)
+# compute lines and confidence intervals
+mu.ruggedlo <- link( m7.5 ,
+data=data.frame(rugged=q.rugged[1],cont_africa=0:1) )
+mu.ruggedlo.mean <- apply( mu.ruggedlo , 2 , mean )
+mu.ruggedlo.PI <- apply( mu.ruggedlo , 2 , PI )
+mu.ruggedhi <- link( m7.5 ,
+data=data.frame(rugged=q.rugged[2],cont_africa=0:1) )
+mu.ruggedhi.mean <- apply( mu.ruggedhi , 2 , mean )
+mu.ruggedhi.PI <- apply( mu.ruggedhi , 2 , PI )
+# plot it all, splitting points at median
+med.r <- median(dd$rugged)
+ox <- ifelse( dd$rugged > med.r , 0.05 , -0.05 )
+plot( dd$cont_africa + ox , log(dd$rgdppc_2000) ,
+col=ifelse(dd$rugged>med.r,rangi2,"black") ,
+xlim=c(-0.25,1.25) , xaxt="n" , ylab="log GDP year 2000" ,
+xlab="Continent" )
+axis( 1 , at=c(0,1) , labels=c("other","Africa") )
+lines( 0:1 , mu.ruggedlo.mean , lty=2 )
+shade( mu.ruggedlo.PI , 0:1 )
+lines( 0:1 , mu.ruggedhi.mean , col=rangi2 )
+shade( mu.ruggedhi.PI , 0:1 , col=col.alpha(rangi2,0.25) )
+
+```
+
+##7.18
+Examine continuous interactions: slope varies continuously with continuous variable
+```{r}
+library(rethinking)
+#blooms of tulips grown in different conditions
+data(tulips)
+d <- tulips
+#water and shade predictor vars
+#blooms - outcome variable to predict
+str(d)
+#7.19
+m7.6 <- map(
+alist(
+blooms ~ dnorm( mu , sigma ) ,
+mu <- a + bW*water + bS*shade ,
+a ~ dnorm( 0 , 100 ) ,
+bW ~ dnorm( 0 , 100 ) ,
+bS ~ dnorm( 0 , 100 ) ,
+sigma ~ dunif( 0 , 100 )
+) ,
+data=d )
+m7.7 <- map(
+alist(
+blooms ~ dnorm( mu , sigma ) ,
+mu <- a + bW*water + bS*shade + bWS*water*shade ,
+a ~ dnorm( 0 , 100 ) ,
+bW ~ dnorm( 0 , 100 ) ,
+bS ~ dnorm( 0 , 100 ) ,
+bWS ~ dnorm( 0 , 100 ) ,
+sigma ~ dunif( 0 , 100 )
+) ,
+data=d )
+
+#7.20
+#fix error messages
+m7.6 <- map(
+alist(
+blooms ~ dnorm( mu , sigma ) ,
+mu <- a + bW*water + bS*shade ,
+a ~ dnorm( 0 , 100 ) ,
+bW ~ dnorm( 0 , 100 ) ,
+bS ~ dnorm( 0 , 100 ) ,
+sigma ~ dunif( 0 , 100 )
+) ,
+data=d ,
+#use a different method to climb the posterior distribution
+method="Nelder-Mead" ,
+#increase max number of iterations (so optim searches longer)
+control=list(maxit=1e4) )
+m7.7 <- map(
+alist(
+blooms ~ dnorm( mu , sigma ) ,
+mu <- a + bW*water + bS*shade + bWS*water*shade ,
+a ~ dnorm( 0 , 100 ) ,
+bW ~ dnorm( 0 , 100 ) ,
+bS ~ dnorm( 0 , 100 ) ,
+bWS ~ dnorm( 0 , 100 ) ,
+sigma ~ dunif( 0 , 100 )
+) ,
+data=d ,
+method="Nelder-Mead" ,
+control=list(maxit=1e4) )
+
+#7.21 
+#look at the estimates
+coeftab(m7.6,m7.7)
+
+#7.22
+#evidence that the interaction model is better:
+compare( m7.6 , m7.7 )
+
+#7.23
+#centered prediction variable: mean is zero
+#can understand model better with coefficients alone
+d$shade.c <- d$shade - mean(d$shade)
+d$water.c <- d$water - mean(d$water)
+
+#7.24
+#now: fix models by using centered variables
+#and explicit start lists for better priors
+m7.8 <- map(
+alist(
+blooms ~ dnorm( mu , sigma ) ,
+mu <- a + bW*water.c + bS*shade.c ,
+a ~ dnorm( 130 , 100 ) ,
+bW ~ dnorm( 0 , 100 ) ,
+bS ~ dnorm( 0 , 100 ) ,
+sigma ~ dunif( 0 , 100 )
+) ,
+data=d ,
+start=list(a=mean(d$blooms),bW=0,bS=0,sigma=sd(d$blooms)) )
+m7.9 <- map(
+alist(
+blooms ~ dnorm( mu , sigma ) ,
+mu <- a + bW*water.c + bS*shade.c + bWS*water.c*shade.c ,
+a ~ dnorm( 130 , 100 ) ,
+bW ~ dnorm( 0 , 100 ) ,
+bS ~ dnorm( 0 , 100 ) ,
+bWS ~ dnorm( 0 , 100 ) ,
+sigma ~ dunif( 0 , 100 )
+) ,
+data=d ,
+start=list(a=mean(d$blooms),bW=0,bS=0,bWS=0,sigma=sd(d$blooms)) )
+coeftab(m7.8,m7.9)
+
+#7.25
+#compute predicted effect of increasing water by 1 unit
+k <- coef(m7.7)
+k[1] + k[2]*2 + k[3]*2 + k[4]*2*2
+
+#7.26
+#same if you use the centered interaction model
+k <- coef(m7.9)
+k[1] + k[2]*0 + k[3]*0 + k[4]*0*0
+
+#7.27
+#table of improved, centered estimates
+precis(m7.9)
+
+#7.28
+#tryptych plot: 3 plots to show 2-way interaction between 2 continuous variables
+# make a plot window with three panels in a single row 
+par(mfrow=c(1,3)) # 1 row, 3 columns
+# loop over values of water.c and plot predictions
+shade.seq <- -1:1
+for ( w in -1:1 ) {
+dt <- d[d$water.c==w,]
+plot( blooms ~ shade.c , data=dt , col=rangi2 ,
+main=paste("water.c =",w) , xaxp=c(-1,1,2) , ylim=c(0,362) ,
+xlab="shade (centered)" )
+mu <- link( m7.9 , data=data.frame(water.c=w,shade.c=shade.seq) )
+mu.mean <- apply( mu , 2 , mean )
+mu.PI <- apply( mu , 2 , PI , prob=0.97 )
+lines( shade.seq , mu.mean )
+lines( shade.seq , mu.PI[1,] , lty=2 )
+lines( shade.seq , mu.PI[2,] , lty=2 )
+}
+
+#7.29
+#model with interaction: as design formula
+m7.x <- lm( y ~ x + z + x*z , data=d )
+
+#7.30
+#same model, abbreviated
+m7.x <- lm( y ~ x*z , data=d )
+
+#7.31
+#can explicitly subtract main effects from the model
+m7.x <- lm( y ~ x + x*z - z , data=d )
+
+#7.32
+#design formula including main effects, 2-way interactions and the 3-way intx
+m7.x <- lm( y ~ x*z*w , data=d )
+
+#7.33
+#expand lm's design formula
+#The function model.matrix takes the design formula, absent the outcome variable, and expands it into a full set of variables for a linear model.
+x <- z <- w <- 1
+colnames( model.matrix(~x*z*w) )
 ```
 
 
