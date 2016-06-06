@@ -6,6 +6,17 @@ output:
   html_document: 
     keep_md: yes
 ---
+For a complex data set, include only certain factors in model
+Others- can try adding individual terms to model
+
+Selecting priors:
+- alpha (intercept): set prior mean to mean of data, set prior sd to sd of data
+- beta (slopes): conservatively set prior mean to 0, means you have no a priori expectation of effect direction. Can eyeball sd from plot of data, choose a relatively broad sd. 
+- regularizing priors: if tons of possible predictors and assume most will be 0, keep sds of each beta small (force most to 0). e.g. GWAS: 100k SNPs in one model, want mean of all to be 0, sd to be small --> most have no effect.
+- if standardizing variables, alpha should DEFINITELY be mean of the data. And having sd of 1 is reasonable if everything is standardized. 
+- range in y / range in x ~= maximum slope estimate
+- even if you use really broad priors, evaluating the model by the methods taught here is very useful!
+
 ```{r}
 #7.1
 #data on terrain ruggedness in Africa vs. other continents

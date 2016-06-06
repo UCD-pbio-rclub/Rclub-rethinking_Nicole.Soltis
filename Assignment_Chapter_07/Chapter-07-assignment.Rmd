@@ -6,44 +6,46 @@ output: html_document
 ---
 
 ##7E1
-1. Bread dough rises because of yeast, but the rate depends on temperature.
-2. Education leads to a higher income, but the rate of income increase depends on gender.
-3. Gasoline makes a car go, but this depends on whether the car has tires.
+1. Bread dough rises because of yeast, but the rate depends on temperature. (or salt)
+2. Education leads to a higher income, but the rate of income increase depends on gender. (or parents' income, or region, or career)
+3. Gasoline makes a car go, but this depends on whether the car has tires. (car has to be on, has to have working engine)
 
 ##7E2
 Interactions:
 1. Caramelizing onions requires cooking over low heat and making sure the onions do not dry out.
-2.  A car will go faster when it has more cylinders or when it has a better fuel injector.
+2.  A car will go faster when it has more cylinders or when it has a better fuel injector. (Because, e.g., with bad injector #cylinders matters, but with good injector it's already at top speed)
+4. Intelligent animal species tend to be either highly social or have manipulative appendages (hands, tentacles, etc.). (AMBIGUOUS. )
 
 No interaction: 
 3. Most people acquire their political beliefs from their parents, unless they get them instead from their friends.
-4. Intelligent animal species tend to be either highly social or have manipulative appendages (hands, tentacles, etc.).
-
 
 ##7E3
 1. carmel ~ temp + dryness + temp:dryness
 2. speed ~ cylinders + injector + cylinders:injector
 3. belief ~ parents + friends
-4. intelligence ~ social + appendages 
+4. intelligence ~ social + appendages + social:appendages
 
 ##7M1
 Temp cold or hot
 Blooms are higher in sun, dependent on sufficient water. At high temperatures, flowering is inhibited, irrelevant of all other conditions.
 
 ##7M2
-bloom ~ water * shade * temperature
-Temperature can equal zero (at high temps) or one (at low temps)
+bloom ~ water * shade * temperature 
+  not quite!
+bloom ~ water:cool + shade:cool + water:shade:cool
+Temperature (cool) can equal zero (at high temps) or one (at low temps)
 
 ##7M3
-If raven population density increased with wolf density. But most likely the slope in raven population density woudl be low at low wolf densities, due to the the challenge in locating rare carrion presence in a mostly- wolfless landscape. Also at very high wolf densities, prey may become scarce and potentially raven densities could drop off prematurely.
+If raven population density increased with wolf density. But most likely the slope in raven population density would be low at low wolf densities, due to the the challenge in locating rare carrion presence in a mostly- wolfless landscape. Also at very high wolf densities, prey may become scarce and potentially raven densities could drop off prematurely.
 
 ##7H1
-Return to the data(tulips) example in the chapter. Now include the bed variable as a predictor in the interaction model. Don’t interact bed with the other predictors; just include it as a main effect. Note that bed is categorical. So to use it properly, you will need to either construct dummy variables or rather an index variable, as explained in Chapter 6.
+Return to the data(tulips) example in the chapter. Now include the bed variable as a predictor in the interaction model. Don’t interact bed with the other predictors; just include it as a main effect. Note that bed is categorical. So to use it properly, you will need to either construct dummy variables or rather an index variable, as explained in Chapter 5.
 ```{r}
 library(rethinking)
 data(tulips)
 d <- tulips
 #make an index variable to describe the 3 values of bed
+##REVIEW THIS
 d$bed_id <- coerce_index(d$bed)
 d$shade.c <- d$shade - mean(d$shade)
 d$water.c <- d$water - mean(d$water)
