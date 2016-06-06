@@ -17,6 +17,14 @@ Selecting priors:
 - range in y / range in x ~= maximum slope estimate
 - even if you use really broad priors, evaluating the model by the methods taught here is very useful!
 
+If you think a function will fail, embed it in "try"
+AND it won't stop running if there is an error
+answer <- try(sum(2,2))
+answer <- try(sum(2,"2"))
+
+Can tell model to keep trying until it chooses a start value that works
+See Julin's notes!
+
 ```{r}
 #7.1
 #data on terrain ruggedness in Africa vs. other continents
