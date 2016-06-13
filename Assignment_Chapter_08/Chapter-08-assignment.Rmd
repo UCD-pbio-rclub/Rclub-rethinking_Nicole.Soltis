@@ -1,0 +1,32 @@
+---
+title: "Chapter-08-assignment"
+author: "Nicole E Soltis"
+date: "June 10, 2016"
+output: html_document
+---
+##8E1
+###Which of the following is a requirement of the simple Metropolis algorithm?
+(1) The parameters must be discrete. - NO
+(2) The likelihood function must be Gaussian. - NO
+(3) The proposal distribution must be symmetric. - YES
+
+##8E2
+###Gibbs sampling is more efficient than the Metropolis algorithm. How does it achieve this extra efficiency? Are there any limitations to the Gibbs sampling strategy? 
+
+It is more efficient in that it allows an asymmetric distribution of proposals, and adaptive proposals. The limitations are that you must use conjugate priors, and Gibbs sampling is very inefficient for complex models.
+
+##8E3
+###Which sort of parameters can Hamiltonian Monte Carlo not handle? Can you explain why?
+
+HMC cannot handle discrete parameters. This is because the mechanism of HMC requires continuous movement through parameter space; it cannot transition between discrete (discontinuous) parameter states.
+
+#next time:
+
+##8E4
+###Explain the difference between the effective number of samples, n_eff as calculated by Stan, and the actual number of samples.
+
+##8E5
+###Which value should Rhat approach, when a chain is sampling the posterior distribution correctly?
+
+##8E6
+###Sketch a good trace plot for a Markov chain, one that is effectively sampling from the posterior distribution. What is good about its shape? Then sketch a trace plot for a malfunctioning Markov chain. What about its shape indicates malfunction?
