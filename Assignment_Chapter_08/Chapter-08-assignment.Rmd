@@ -3,6 +3,7 @@ title: "Chapter-08-assignment"
 author: "Nicole E Soltis"
 date: "June 10, 2016"
 output: html_document
+  keep_md: yes
 ---
 ##8E1
 ###Which of the following is a requirement of the simple Metropolis algorithm?

@@ -1,11 +1,6 @@
----
-title: "Chapter-07-assignment"
-author: "Nicole E Soltis"
-date: "May 26, 2016"
-output: 
-  html_document:
-    keep_md: yes
----
+# Chapter-07-assignment
+Nicole E Soltis  
+May 26, 2016  
 
 ##7E1
 1. Bread dough rises because of yeast, but the rate depends on temperature. (or salt)
@@ -42,8 +37,38 @@ If raven population density increased with wolf density. But most likely the slo
 
 ##7H1
 ###Return to the data(tulips) example in the chapter. Now include the bed variable as a predictor in the interaction model. Don’t interact bed with the other predictors; just include it as a main effect. Note that bed is categorical. So to use it properly, you will need to either construct dummy variables or rather an index variable, as explained in Chapter 5.
-```{r}
+
+```r
 library(rethinking)
+```
+
+```
+## Loading required package: rstan
+```
+
+```
+## Loading required package: ggplot2
+```
+
+```
+## rstan (Version 2.9.0-3, packaged: 2016-02-11 15:54:41 UTC, GitRev: 05c3d0058b6a)
+```
+
+```
+## For execution on a local, multicore CPU with excess RAM we recommend calling
+## rstan_options(auto_write = TRUE)
+## options(mc.cores = parallel::detectCores())
+```
+
+```
+## Loading required package: parallel
+```
+
+```
+## rethinking (Version 1.58)
+```
+
+```r
 data(tulips)
 d <- tulips
 #make an index variable to describe the 3 values of bed
@@ -93,9 +118,21 @@ control=list(maxit=1e4))
 precis(m7.h1, depth=2)
 ```
 
+```
+##         Mean StdDev   5.5%  94.5%
+## a[1]   97.65  12.95  76.96 118.34
+## a[2]  142.38  12.95 121.68 163.07
+## a[3]  146.97  12.95 126.27 167.66
+## bW     75.17   9.20  60.47  89.86
+## bS    -41.24   9.19 -55.94 -26.55
+## bWS   -52.16  11.24 -70.12 -34.20
+## sigma  39.17   5.33  30.65  47.69
+```
+
 ##7H2
 ###Use WAIC to compare the model from 7H1 to a model that omits bed. What do you infer from this comparison? Can you reconcile the WAIC results with the posterior distribution of the bed coefficients?
-```{r}
+
+```r
 m7.h2 <- map(
 alist(
 blooms ~ dnorm( mu , sigma ) ,
@@ -109,8 +146,40 @@ method="Nelder-Mead",
 control=list(maxit=1e5))
 
 compare(m7.h1, m7.h2)
+```
+
+```
+##        WAIC pWAIC dWAIC weight    SE dSE
+## m7.h1 294.4   9.6   0.0   0.67  9.99  NA
+## m7.h2 295.8   6.4   1.4   0.33 10.01 8.2
+```
+
+```r
 precis(m7.h1, depth=2)
+```
+
+```
+##         Mean StdDev   5.5%  94.5%
+## a[1]   97.65  12.95  76.96 118.34
+## a[2]  142.38  12.95 121.68 163.07
+## a[3]  146.97  12.95 126.27 167.66
+## bW     75.17   9.20  60.47  89.86
+## bS    -41.24   9.19 -55.94 -26.55
+## bWS   -52.16  11.24 -70.12 -34.20
+## sigma  39.17   5.33  30.65  47.69
+```
+
+```r
 precis(m7.h2)
+```
+
+```
+##         Mean StdDev   5.5%  94.5%
+## a     129.03   8.70 115.12 142.94
+## bW     72.47  10.50  55.69  89.25
+## bS    -39.79  10.47 -56.52 -23.05
+## bWS   -49.50  12.70 -69.80 -29.19
+## sigma  45.38   6.22  35.45  55.32
 ```
 The model prediction with bed is ever-so-slightly better. 
 So, would we average the models, or go with the simpler model? Very close.
@@ -120,7 +189,8 @@ So, would we average the models, or go with the simpler model? Very close.
 
 ###a) Begin by using map to fit just the interaction model... here y is log GDP per capita in the year 2000 (log of rgdppc_2000); A is contafrica, the dummy variable for being an African nation; and R is the variable rugged. Choose your own priors. Compare the inference from this model fit to the data without Seychelles to the same model fit to the full data. Does it still seem like the effect of ruggedness depends upon continent? How much has the expected relationship changed?
 
-```{r}
+
+```r
 library(rethinking)
 data(rugged)
 dd <- rugged
@@ -153,21 +223,88 @@ sigma ~ dunif( 0 , 10 )
 data=dd.ns )
 
 precis(m7.h3)
+```
+
+```
+##        Mean StdDev  5.5% 94.5%
+## a      9.18   0.14  8.97  9.40
+## bA    -1.85   0.22 -2.20 -1.50
+## bR    -0.18   0.08 -0.31 -0.06
+## bAR    0.35   0.13  0.14  0.55
+## sigma  0.93   0.05  0.85  1.01
+```
+
+```r
 precis(m7.h3ns)
+```
+
+```
+##        Mean StdDev  5.5% 94.5%
+## a      9.22   0.14  9.00  9.44
+## bA    -1.88   0.23 -2.24 -1.52
+## bR    -0.20   0.08 -0.32 -0.08
+## bAR    0.30   0.14  0.08  0.52
+## sigma  0.93   0.05  0.84  1.01
+```
+
+```r
 coeftab(m7.h3, m7.h3ns)
+```
+
+```
+##       m7.h3   m7.h3ns
+## a        9.18    9.22
+## bA      -1.85   -1.88
+## bR      -0.18   -0.20
+## bAR      0.35    0.30
+## sigma    0.93    0.93
+## nobs      170     169
 ```
 There is very little change in the predicted effect of ruggedness after removing Seychelles.
 
 ###b) Now plot the predictions of the interaction model, with and without Seychelles. Does it still seem like the effect of ruggedness depends upon continent? How much has the expected relationship changed?
 
-```{r}
+
+```r
 #first: full data set (WITH Seychelles)
 #calculate posterior mean line and interval for Africa & not-Africa plots
 rugged.seq <- seq(from=-1,to=8,by=0.25) 
 mu.Africa <- link( m7.h3 , data=data.frame(cont_africa=1,rugged=rugged.seq) )
+```
+
+```
+## [ 100 / 1000 ]
+[ 200 / 1000 ]
+[ 300 / 1000 ]
+[ 400 / 1000 ]
+[ 500 / 1000 ]
+[ 600 / 1000 ]
+[ 700 / 1000 ]
+[ 800 / 1000 ]
+[ 900 / 1000 ]
+[ 1000 / 1000 ]
+```
+
+```r
 mu.Africa.mean <- apply( mu.Africa , 2 , mean )
 mu.Africa.PI <- apply( mu.Africa , 2 , PI , prob=0.97 )
 mu.NotAfrica <- link( m7.h3 , data=data.frame(cont_africa=0,rugged=rugged.seq) )
+```
+
+```
+## [ 100 / 1000 ]
+[ 200 / 1000 ]
+[ 300 / 1000 ]
+[ 400 / 1000 ]
+[ 500 / 1000 ]
+[ 600 / 1000 ]
+[ 700 / 1000 ]
+[ 800 / 1000 ]
+[ 900 / 1000 ]
+[ 1000 / 1000 ]
+```
+
+```r
 mu.NotAfrica.mean <- apply( mu.NotAfrica , 2 , mean )
 mu.NotAfrica.PI <- apply( mu.NotAfrica , 2 , PI , prob=0.97 )
 # plot African nations with regression
@@ -193,9 +330,41 @@ shade( mu.NotAfrica.PI , rugged.seq )
 #calculate posterior mean line and interval for Africa & not-Africa plots
 rugged.seq <- seq(from=-1,to=8,by=0.25) 
 mu.Africa <- link( m7.h3ns , data=data.frame(cont_africa=1,rugged=rugged.seq) )
+```
+
+```
+## [ 100 / 1000 ]
+[ 200 / 1000 ]
+[ 300 / 1000 ]
+[ 400 / 1000 ]
+[ 500 / 1000 ]
+[ 600 / 1000 ]
+[ 700 / 1000 ]
+[ 800 / 1000 ]
+[ 900 / 1000 ]
+[ 1000 / 1000 ]
+```
+
+```r
 mu.Africa.mean <- apply( mu.Africa , 2 , mean )
 mu.Africa.PI <- apply( mu.Africa , 2 , PI , prob=0.97 )
 mu.NotAfrica <- link( m7.h3ns , data=data.frame(cont_africa=0,rugged=rugged.seq) )
+```
+
+```
+## [ 100 / 1000 ]
+[ 200 / 1000 ]
+[ 300 / 1000 ]
+[ 400 / 1000 ]
+[ 500 / 1000 ]
+[ 600 / 1000 ]
+[ 700 / 1000 ]
+[ 800 / 1000 ]
+[ 900 / 1000 ]
+[ 1000 / 1000 ]
+```
+
+```r
 mu.NotAfrica.mean <- apply( mu.NotAfrica , 2 , mean )
 mu.NotAfrica.PI <- apply( mu.NotAfrica , 2 , PI , prob=0.97 )
 # plot African nations with regression
@@ -214,14 +383,19 @@ xlab="Terrain Ruggedness Index" )
 mtext( "Non-African nations" , 3 )
 lines( rugged.seq , mu.NotAfrica.mean )
 shade( mu.NotAfrica.PI , rugged.seq )
+```
 
+![](Chapter-07-assignment_files/figure-html/unnamed-chunk-4-1.png)
+
+```r
 par(opar)
 ```
 The effect of ruggedness still does seem to depend on continent. However, the increase in GDP per increase in ruggedness has dropped for Africa, and the uncertainty at high ruggedness levels has increased. Even so, the slopes of African vs. Non-African nations appear significantly different.
 
 ###c) Finally, conduct a model comparison analysis, using WAIC. Fit three models to the data without Seychelles ... Use whatever priors you think are sensible. Plot the model-averaged predictions of this model set. Do your inferences differ from those in (b)? Why or why not?
 
-```{r}
+
+```r
 m7.h3c1 <- map(
 alist(
 log_gdp ~ dnorm( mu , sigma ) ,
@@ -258,6 +432,16 @@ data=dd.ns )
 #plot the model-averaged predictions
 par(mfrow=c(1,1))
 compare(m7.h3c1, m7.h3c2, m7.h3c3)
+```
+
+```
+##          WAIC pWAIC dWAIC weight    SE   dSE
+## m7.h3c3 463.7   4.8   0.0   0.76 15.15    NA
+## m7.h3c2 466.0   3.9   2.3   0.24 14.13  3.18
+## m7.h3c1 536.4   2.8  72.7   0.00 13.41 15.35
+```
+
+```r
 #can't plot?
 ```
 Very close in comparison of model with/ without interaction term.
@@ -265,7 +449,8 @@ Very close in comparison of model with/ without interaction term.
 ##7H4
 ###Use these data to evaluate the hypothesis that language diversity is partly a product of food security. Specifically, you will try to model the number of languages per capita as the outcome variable. Use the logarithm of this new variable as your regression outcome.
 
-```{r}
+
+```r
 library(rethinking)
 data(nettle)
 d <- nettle
@@ -276,7 +461,8 @@ d$log.area <- log(d$area)
 
 ###(a) Evaluate the hypothesis that language diversity, as measured by log(lang.per.cap), is positively associated with the average length of the growing season, mean.growing.season. Consider log(area) in your regression(s) as a covariate (not an interaction). Interpret your results.
 
-```{r}
+
+```r
 m7.h4 <- map(
 alist(
 log.lang ~ dnorm( mu , sigma ) ,
@@ -291,11 +477,20 @@ data=d )
 precis(m7.h4)
 ```
 
+```
+##        Mean StdDev  5.5% 94.5%
+## a     -1.99   1.41 -4.24  0.25
+## bG     0.11   0.05  0.03  0.20
+## bA    -0.33   0.10 -0.49 -0.17
+## sigma  1.40   0.12  1.21  1.58
+```
+
 With log(area) as a covariate, the association between mean.growing.season and log(lang.per.cap) is most likely positive. 
 
 ###(b) Now evaluate the hypothesis that language diversity is negatively associated with the standard deviation of length of growing season, sd.growing.season. This hypothesis follows from uncertainty in harvest favoring social insurance through larger social networks and therefore fewer languages. Again, consider log(area) as a covariate (not an interaction). Interpret your results.
 
-```{r}
+
+```r
 m7.h4b <- map(
 alist(
 log.lang ~ dnorm( mu , sigma ) ,
@@ -308,13 +503,31 @@ sigma ~ dunif( 0 , 10 )
 data=d )
 
 precis(m7.h4b)
+```
+
+```
+##        Mean StdDev  5.5% 94.5%
+## a     -1.10   1.36 -3.27  1.08
+## bG    -0.17   0.18 -0.45  0.11
+## bA    -0.31   0.11 -0.50 -0.13
+## sigma  1.44   0.12  1.25  1.63
+```
+
+```r
 compare(m7.h4, m7.h4b)
+```
+
+```
+##         WAIC pWAIC dWAIC weight    SE dSE
+## m7.h4  268.0   4.4   0.0   0.94 15.96  NA
+## m7.h4b 273.3   4.9   5.4   0.06 16.64 4.9
 ```
 This hypothesis seems weaker. Though the mean effect of sd.growing.season on log(lang.per.cap) is negative, the confidence interval surrounds 0. Further, this model does not perform as well as the previous model.
 
 ###(c) Finally, evaluate the hypothesis that mean.growing.season and sd.growing.season interact to synergistically reduce language diversity. The idea is that, in nations with longer average growing seasons, high variance makes storage and redistribution even more important than it would be otherwise. That way, people can cooperate to preserve and protect windfalls to be used during the droughts. These forces in turn may lead to greater social integration and fewer languages.
 
-```{r}
+
+```r
 m7.h4c <- map(
 alist(
 log.lang ~ dnorm( mu , sigma ) ,
@@ -329,7 +542,27 @@ sigma ~ dunif( 0 , 10 )
 data=d )
 
 precis(m7.h4c)
+```
+
+```
+##        Mean StdDev  5.5% 94.5%
+## a     -3.18   1.49 -5.57 -0.80
+## bMG    0.22   0.07  0.11  0.33
+## bSG    0.38   0.36 -0.20  0.97
+## bSM   -0.09   0.04 -0.16 -0.01
+## bA    -0.26   0.11 -0.45 -0.08
+## sigma  1.33   0.11  1.15  1.51
+```
+
+```r
 compare(m7.h4, m7.h4b, m7.h4c)
+```
+
+```
+##         WAIC pWAIC dWAIC weight    SE  dSE
+## m7.h4c 265.3   6.4   0.0   0.76 16.98   NA
+## m7.h4  267.7   4.3   2.4   0.22 15.97 4.47
+## m7.h4b 272.9   4.7   7.6   0.02 16.63 5.22
 ```
 
 The model including the interaction between mean growing season and sd of growing season appears to perform best. This includes a positive effect of sd and mean, with a negative interaction.
