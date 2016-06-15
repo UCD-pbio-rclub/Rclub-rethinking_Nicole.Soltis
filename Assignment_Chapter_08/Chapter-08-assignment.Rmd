@@ -21,13 +21,17 @@ It is more efficient in that it allows an asymmetric distribution of proposals, 
 
 HMC cannot handle discrete parameters. This is because the mechanism of HMC requires continuous movement through parameter space; it cannot transition between discrete (discontinuous) parameter states.
 
-#next time:
-
 ##8E4
 ###Explain the difference between the effective number of samples, n_eff as calculated by Stan, and the actual number of samples.
+
+n_eff is an estimate of the number of *independent* samples from the posterior, but sequential samples are not always independent due to autocorrelation of Markov chains.
 
 ##8E5
 ###Which value should Rhat approach, when a chain is sampling the posterior distribution correctly?
 
+Rhat should be approximately 1, if the chain is healthy.
+
 ##8E6
 ###Sketch a good trace plot for a Markov chain, one that is effectively sampling from the posterior distribution. What is good about its shape? Then sketch a trace plot for a malfunctioning Markov chain. What about its shape indicates malfunction?
+
+A good trace plot is stationary (centered around the same mean), and well-mixed (there is not high correlation between successive samples). 
