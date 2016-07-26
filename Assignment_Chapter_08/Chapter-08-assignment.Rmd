@@ -5,6 +5,7 @@ date: "June 10, 2016"
 output: html_document
   keep_md: yes
 ---
+
 ##8E1
 ###Which of the following is a requirement of the simple Metropolis algorithm?
 (1) The parameters must be discrete. - NO
@@ -35,3 +36,316 @@ Rhat should be approximately 1, if the chain is healthy.
 ###Sketch a good trace plot for a Markov chain, one that is effectively sampling from the posterior distribution. What is good about its shape? Then sketch a trace plot for a malfunctioning Markov chain. What about its shape indicates malfunction?
 
 A good trace plot is stationary (centered around the same mean), and well-mixed (there is not high correlation between successive samples). 
+
+#8M1
+Re-estimate the terrain ruggedness model from the chapter, but now using a uniform prior and an exponential prior for the standard deviation, sigma. The uniform prior should be dunif(0,10) and the exponential should be dexp(1). Do the different priors have any detectible influence on the
+posterior distribution?
+
+```{r}
+library(rethinking)
+data(rugged)
+d <- rugged
+d$log_gdp <- log(d$rgdppc_2000)
+dd <- d[ complete.cases(d$rgdppc_2000) , ]
+dd.trim <- dd[ , c("log_gdp","rugged","cont_africa") ]
+str(dd.trim)
+m8M1a <- map2stan(
+                      alist(
+                        log_gdp ~ dnorm( mu , sigma ) ,
+                        mu <- a + bR*rugged + bA*cont_africa + bAR*rugged*cont_africa ,
+                        a ~ dnorm(0,100),
+                        bR ~ dnorm(0,10),
+                        bA ~ dnorm(0,10),
+                        bAR ~ dnorm(0,10),
+                        sigma ~ dunif(0,10)
+                      ) ,
+                      data=dd.trim )
+m8M1b <- map2stan(
+                      alist(
+                        log_gdp ~ dnorm( mu , sigma ) ,
+                        mu <- a + bR*rugged + bA*cont_africa + bAR*rugged*cont_africa ,
+                        a ~ dnorm(0,100),
+                        bR ~ dnorm(0,10),
+                        bA ~ dnorm(0,10),
+                        bAR ~ dnorm(0,10),
+                        sigma ~ dexp(1)
+                      ) ,
+                      data=dd.trim )
+
+precis(m8M1a)
+precis(m8M1b)
+```
+In this case, the posterior distribution is nearly identical irrelevant of which prior is used for sigma.
+
+#8M2
+The Cauchy and exponential priors from the terrain ruggedness model are very weak. They can be made more informative by reducing their scale. Compare the dcauchy and dexp priors for progressively smaller values of the scaling parameter. As these priors become stronger, how does each
+influence the posterior distribution?
+
+```{r}
+#for (myvar in c(2,1,0.8,0.5,0.1,0.001)){
+m8M2_c2 <- map2stan(
+                      alist(
+                        log_gdp ~ dnorm( mu , sigma ) ,
+                        mu <- a + bR*rugged + bA*cont_africa + bAR*rugged*cont_africa ,
+                        a ~ dnorm(0,100),
+                        bR ~ dnorm(0,10),
+                        bA ~ dnorm(0,10),
+                        bAR ~ dnorm(0,10),
+                      sigma ~ dcauchy(0,2)
+                      ) ,
+                      data=dd.trim )
+#}
+m8M2_c1 <- map2stan(
+                      alist(
+                        log_gdp ~ dnorm( mu , sigma ) ,
+                        mu <- a + bR*rugged + bA*cont_africa + bAR*rugged*cont_africa ,
+                        a ~ dnorm(0,100),
+                        bR ~ dnorm(0,10),
+                        bA ~ dnorm(0,10),
+                        bAR ~ dnorm(0,10),
+                      sigma ~ dcauchy(0,1)
+                      ) ,
+                      data=dd.trim )
+m8M2_c0.5 <- map2stan(
+                      alist(
+                        log_gdp ~ dnorm( mu , sigma ) ,
+                        mu <- a + bR*rugged + bA*cont_africa + bAR*rugged*cont_africa ,
+                        a ~ dnorm(0,100),
+                        bR ~ dnorm(0,10),
+                        bA ~ dnorm(0,10),
+                        bAR ~ dnorm(0,10),
+                      sigma ~ dcauchy(0,0.5)
+                      ) ,
+                      data=dd.trim )
+m8M2_c0.1 <- map2stan(
+                      alist(
+                        log_gdp ~ dnorm( mu , sigma ) ,
+                        mu <- a + bR*rugged + bA*cont_africa + bAR*rugged*cont_africa ,
+                        a ~ dnorm(0,100),
+                        bR ~ dnorm(0,10),
+                        bA ~ dnorm(0,10),
+                        bAR ~ dnorm(0,10),
+                      sigma ~ dcauchy(0,0.1)
+                      ) ,
+                      data=dd.trim )
+m8M2_c0.01 <- map2stan(
+                      alist(
+                        log_gdp ~ dnorm( mu , sigma ) ,
+                        mu <- a + bR*rugged + bA*cont_africa + bAR*rugged*cont_africa ,
+                        a ~ dnorm(0,100),
+                        bR ~ dnorm(0,10),
+                        bA ~ dnorm(0,10),
+                        bAR ~ dnorm(0,10),
+                      sigma ~ dcauchy(0,0.01)
+                      ) ,
+                      data=dd.trim )
+(precis(m8M2_c2))
+(precis(m8M2_c1))
+(precis(m8M2_c0.5))
+(precis(m8M2_c0.1))
+(precis(m8M2_c0.01))
+m8M2_e2 <- map2stan(
+                      alist(
+                        log_gdp ~ dnorm( mu , sigma ) ,
+                        mu <- a + bR*rugged + bA*cont_africa + bAR*rugged*cont_africa ,
+                        a ~ dnorm(0,100),
+                        bR ~ dnorm(0,10),
+                        bA ~ dnorm(0,10),
+                        bAR ~ dnorm(0,10),
+                      sigma ~ dexp(2)
+                      ) ,
+                      data=dd.trim )
+m8M2_e1 <- map2stan(
+                      alist(
+                        log_gdp ~ dnorm( mu , sigma ) ,
+                        mu <- a + bR*rugged + bA*cont_africa + bAR*rugged*cont_africa ,
+                        a ~ dnorm(0,100),
+                        bR ~ dnorm(0,10),
+                        bA ~ dnorm(0,10),
+                        bAR ~ dnorm(0,10),
+                      sigma ~ dexp(1)
+                      ) ,
+                      data=dd.trim )
+m8M2_e0.5 <- map2stan(
+                      alist(
+                        log_gdp ~ dnorm( mu , sigma ) ,
+                        mu <- a + bR*rugged + bA*cont_africa + bAR*rugged*cont_africa ,
+                        a ~ dnorm(0,100),
+                        bR ~ dnorm(0,10),
+                        bA ~ dnorm(0,10),
+                        bAR ~ dnorm(0,10),
+                      sigma ~ dexp(0.5)
+                      ) ,
+                      data=dd.trim )
+m8M2_e0.1 <- map2stan(
+                      alist(
+                        log_gdp ~ dnorm( mu , sigma ) ,
+                        mu <- a + bR*rugged + bA*cont_africa + bAR*rugged*cont_africa ,
+                        a ~ dnorm(0,100),
+                        bR ~ dnorm(0,10),
+                        bA ~ dnorm(0,10),
+                        bAR ~ dnorm(0,10),
+                      sigma ~ dexp(0.1)
+                      ) ,
+                      data=dd.trim )
+m8M2_e0.01 <- map2stan(
+                      alist(
+                        log_gdp ~ dnorm( mu , sigma ) ,
+                        mu <- a + bR*rugged + bA*cont_africa + bAR*rugged*cont_africa ,
+                        a ~ dnorm(0,100),
+                        bR ~ dnorm(0,10),
+                        bA ~ dnorm(0,10),
+                        bAR ~ dnorm(0,10),
+                      sigma ~ dexp(0.01)
+                      ) ,
+                      data=dd.trim )
+precis(m8M2_e2)
+precis(m8M2_e1)
+precis(m8M2_e0.5)
+precis(m8M2_e0.1)
+precis(m8M2_e0.01)
+```
+I see very little change in the posteriors with changes to the priors. 
+
+#8M3
+Re-estimate one of the Stan models from the chapter, but at different numbers of warmup iterations. Be sure to use the same number of sampling iterations in each case. Compare the n_eff values. How much warmup is enough?
+```{r}
+m8M3_w1 <- map2stan(
+                  alist(
+                    y ~ dnorm( mu , sigma ) ,
+                    mu <- alpha ,
+                    alpha ~ dnorm( 1 , 10 ) ,
+                    sigma ~ dcauchy( 0 , 1 )
+                  ) ,
+                  data=list(y=y) , start=list(alpha=0,sigma=1) ,
+                  chains=2 , iter=4000 , warmup=1000 )
+m8M3_w2 <- map2stan(
+                  alist(
+                    y ~ dnorm( mu , sigma ) ,
+                    mu <- alpha ,
+                    alpha ~ dnorm( 1 , 10 ) ,
+                    sigma ~ dcauchy( 0 , 1 )
+                  ) ,
+                  data=list(y=y) , start=list(alpha=0,sigma=1) ,
+                  chains=2 , iter=4000 , warmup=20 )
+m8M3_w3 <- map2stan(
+                  alist(
+                    y ~ dnorm( mu , sigma ) ,
+                    mu <- alpha ,
+                    alpha ~ dnorm( 1 , 10 ) ,
+                    sigma ~ dcauchy( 0 , 1 )
+                  ) ,
+                  data=list(y=y) , start=list(alpha=0,sigma=1) ,
+                  chains=2 , iter=4000 , warmup=5 )
+m8M3_w4 <- map2stan(
+                  alist(
+                    y ~ dnorm( mu , sigma ) ,
+                    mu <- alpha ,
+                    alpha ~ dnorm( 1 , 10 ) ,
+                    sigma ~ dcauchy( 0 , 1 )
+                  ) ,
+                  data=list(y=y) , start=list(alpha=0,sigma=1) ,
+                  chains=2 , iter=4000 , warmup=10 )
+m8M3_w5 <- map2stan(
+                  alist(
+                    y ~ dnorm( mu , sigma ) ,
+                    mu <- alpha ,
+                    alpha ~ dnorm( 1 , 10 ) ,
+                    sigma ~ dcauchy( 0 , 1 )
+                  ) ,
+                  data=list(y=y) , start=list(alpha=0,sigma=1) ,
+                  chains=2 , iter=4000 , warmup=15 )
+m8M3_w6 <- map2stan(
+                  alist(
+                    y ~ dnorm( mu , sigma ) ,
+                    mu <- alpha ,
+                    alpha ~ dnorm( 1 , 10 ) ,
+                    sigma ~ dcauchy( 0 , 1 )
+                  ) ,
+                  data=list(y=y) , start=list(alpha=0,sigma=1) ,
+                  chains=2 , iter=4000 , warmup=18 )
+precis(m8M3_w1)
+post8M3_w1 <- extract.samples(m8M3_w1)
+plot(post8M3_w1$alpha, type="l")
+precis(m8M3_w2)
+post8M3_w2 <- extract.samples(m8M3_w2)
+plot(post8M3_w2$alpha, type="l")
+post8M3_w3 <- extract.samples(m8M3_w3)
+plot(post8M3_w3$alpha, type="l")
+precis(m8M3_w3)
+post8M3_w4 <- extract.samples(m8M3_w4)
+plot(post8M3_w4$alpha, type="l")
+precis(m8M3_w4)
+post8M3_w5 <- extract.samples(m8M3_w5)
+plot(post8M3_w5$alpha, type="l")
+precis(m8M3_w5)
+post8M3_w6 <- extract.samples(m8M3_w6)
+plot(post8M3_w6$alpha, type="l")
+precis(m8M3_w6)
+```
+It looks like about 20 warmup iterations is just enough.
+
+#8H1
+##Run the model below and then inspect the posterior distribution and explain what it is accomplishing.
+```{r}
+mp <- map2stan(
+alist(
+a ~ dnorm(0,1),
+b ~ dcauchy(0,1)
+),
+data=list(y=1),
+start=list(a=0,b=0),
+iter=1e4, warmup=100 , WAIC=FALSE )
+precis(mp)
+```
+For a the mean is 0 and the SD ~ 1. b has a wide SD, which I'd expect for cauchy. So really this is just looking at the posteriors given each type of prior, irrelevant of the data.
+
+#8H2
+Recall the divorce rate example from Chapter 5. Repeat that analysis, using map2stan this time, fitting models m5.1, m5.2, and m5.3. Use compare to compare the models on the basis of WAIC. Explain the results.
+```{r}
+library(rethinking)
+data(WaffleDivorce)
+d <- WaffleDivorce
+d$MedianAgeMarriage.s <- (d$MedianAgeMarriage-mean(d$MedianAgeMarriage))/
+sd(d$MedianAgeMarriage)
+#rename variables to keep Stan happy
+names(d)
+d$MedianAgeMarriageS <- d$MedianAgeMarriage.s
+d <- d[, c("MedianAgeMarriageS", "Marriage")]
+# fit model
+m8H2.5.1<- map2stan(
+              alist(
+                Divorce ~ dnorm( mu , sigma ) ,
+                mu <- a + bA * MedianAgeMarriageS ,
+                a ~ dnorm( 10 , 10 ) ,
+                bA ~ dnorm( 0 , 1 ) ,
+                sigma ~ dcauchy( 0 , 10 )
+              ) , 
+              data = d, start=list(a=0, bA=0, sigma=1),
+              chains = 4)
+
+d$MarriageS <- (d$Marriage - mean(d$Marriage))/sd(d$Marriage)
+m8H2.5.2<- map2stan(
+              alist(
+                Divorce ~ dnorm( mu , sigma ) ,
+                mu <- a + bR * MarriageS ,
+                a ~ dnorm( 10 , 10 ) ,
+                bR ~ dnorm( 0 , 1 ) ,
+                sigma ~ dcauchy( 0 , 10 )
+              ) , 
+              data = d, start=list(a=0, bA=0, sigma=1),
+              chains = 4)
+
+m8H2.5.3<- map2stan(
+              alist(
+                Divorce ~ dnorm( mu , sigma ) ,
+                mu <- a + bR * MarriageS + bA * MedianAgeMarriageS,
+                a ~ dnorm( 10 , 10 ) ,
+                bR ~ dnorm( 0 , 1 ) ,
+                bA ~ dnorm( 0 , 1 ) ,
+                sigma ~ dcauchy( 0 , 10 )
+              ) , 
+              data = d, start=list(a=0, bA=0, sigma=1),
+              chains = 4)
+#compare(m8H2.5.1, m8H2.5.2, m8H2.5.3)
+```
