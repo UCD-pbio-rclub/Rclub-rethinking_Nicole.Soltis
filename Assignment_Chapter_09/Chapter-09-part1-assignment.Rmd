@@ -8,6 +8,7 @@ output:
 ---
 
 ```{r}
+setwd("~/Projects/git.repos/Rclub-rethinking_Nicole.Soltis/Assignment_Chapter_09/data")
 library(rethinking)
 mydata <- read.csv('TomatoR2CSHL.csv')
 names(mydata)
