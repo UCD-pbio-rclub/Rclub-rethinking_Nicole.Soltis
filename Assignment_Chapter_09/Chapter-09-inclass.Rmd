@@ -1,0 +1,167 @@
+---
+title: "Chapter_9_inclass"
+author: "Nicole E Soltis"
+date: "August 2, 2016"
+output: html_document
+---
+
+```{r}
+setwd("~/Projects/git.repos/Rclub-rethinking_Nicole.Soltis/Assignment_Chapter_09/data")
+library(rethinking)
+library(ggplot2)
+library(reshape2)
+mydata <- read.csv('TomatoR2CSHL.csv')
+
+#view your data before building a model!
+head(mydata)
+summary(mydata)
+
+#plot this
+#freq dist
+plot1 <- ggplot(data=mydata, aes(x=hyp, fill=trt)) + 
+  geom_density() + 
+  facet_grid(species ~ trt)
+plot1
+#hint of bimodality for some of the species!
+
+#boxplot: easier to ID potential outliers
+plot2 <- ggplot(data=mydata, aes(y=hyp, x=species, fill=trt)) + 
+  geom_boxplot()
+plot2
+
+names(mydata)
+#trt is read in as a factor, so you *can* use as.numeric
+#h is high-IR (control), l is low-IR (treatment)
+mydata$trt.l <- ifelse(mydata$trt == "L", 1, 0)
+
+mydata$trt2 <- as.numeric(mydata$trt)
+levels(mydata$trt)
+#by default, sets H=1, L=2 so subtract 1 from each to make it easier to interpret
+mydata$trt2 <- as.numeric(mydata$trt)-1 #now H=0, L=1
+
+#can transform the data to make it more normally distributed: 
+#based on the density plots, looks normal *enough*
+#but to check transformation graphically anyway:
+plot1 <- ggplot(data=mydata, aes(x=sqrt(hyp), fill=trt)) + 
+  geom_density() + 
+  facet_grid(species ~ trt)
+plot1 
+
+#test for normality statistically:
+#first split by species and by treatment
+by(mydata$hyp, list(mydata$trt, mydata$species), shapiro.test)
+#so: L S. hab, L S. penn, H S. per, L S. per are normal
+#other 6 are not
+
+#try with the transformed data
+by(sqrt(mydata$hyp), list(mydata$trt, mydata$species), shapiro.test)
+#now all but H S. chm, H S. hab are normally distributed
+
+#dcauchy use so far in this book: prior of the parameter, 
+#rather than for the data
+
+#so now we'll add a transformed variable
+mydata$hyp.t <- sqrt(mydata$hyp)
+
+# prepare species variable as numeric
+#can go one species per column
+mydata$Schilense <- ifelse(mydata$species=="S. chilense", 1, 0)
+#doing as.numeric is problematic, because map2stan will assume that species 5 is 5x speciies 1, etc.
+#Julin's approach
+mydata$index <- 1:nrow(mydata)
+#sort of silly to ask "length" because it's always only one row with a given index/ hyp/ trt combination... but it works to give you 0/1
+#also MUST include index, because some hyp:trt combinations were recorded more than once
+data2 <- dcast(mydata, index + hyp + trt2 ~ species, value.var = "species", fun.aggregate = length)
+head(data2)
+
+#stan doesn't like for you to have extra columns in your dataframe
+data2.trt <- data2[,c("hyp", "trt2")]
+head(data2.trt)
+mean(data2.trt$hyp)
+hyp.stan <- map2stan(alist(
+  hyp ~ dnorm(mu,sigma),
+  mu<- a+bT*trt2,
+  a~dnorm(0,100),
+  bT~dnorm(0,10),
+  sigma~dunif(0,10)),
+  data2.trt,
+  chains=4)
+
+precis(hyp.stan)
+#if having trouble plotting, delete R workspace files and reload R
+plot(hyp.stan)
+par(mfrow=c(1,1), mfcol=c(1,1))
+plot(precis(hyp.stan))
+
+#repeat this anayliss for species
+names(data2)
+#can drop one species and make it our intercept ... or have a separate intercept for each species
+colnames(data2) <- sub(". ", "_", colnames(data2))
+data2.spec.all <- data2[,c("hyp", "S_chilense", "S_chmielewskii", "S_habrochaites", "S_pennellii", "S_peruvianum" )]
+
+head(data2.spec.all)
+mean(data2.trt$hyp)
+#no intercept (a)
+hyp.stan.spec <- map2stan(alist(
+  hyp ~ dnorm(mu,sigma),
+  mu <- bChil*S_chilense + bChmi*S_chmielewskii + bHab*S_habrochaites + bPen*S_pennellii + bPer*S_peruvianum,
+  c(bChil, bChmi, bHab, bPen, bPer) ~ dnorm(33,10),
+  sigma~dunif(0,10)),
+  data2.spec.all,
+  chains=4)
+plot(hyp.stan.spec)
+par(mfrow=c(1,1), mfcol=c(1,1))
+plot(precis(hyp.stan.spec))
+
+#can get something like a p-value for each parameter:
+#proportion of posterior that is above/ below zero
+
+#now: compare to reference genotype (chmielewskii)
+names(data2.spec.all)
+data2.spec.nochm <- data2.spec.all[,c(1,2,4:6)]
+hyp.stan.nochm <- map2stan(alist(
+  hyp ~ dnorm(mu,sigma),
+  mu <- a + bChil*S_chilense + bHab*S_habrochaites + bPen*S_pennellii + bPer*S_peruvianum,
+  a~dnorm(33, 10),
+  c(bChil, bChmi, bHab, bPen, bPer) ~ dnorm(0,10),
+  sigma~dunif(0,10)),
+  data2.spec.nochm,
+  chains=4)
+plot(hyp.stan.nochm)
+par(mfrow=c(1,1), mfcol=c(1,1))
+plot(precis(hyp.stan.nochm))
+
+#finally, model with species and trt
+data2.species.trt <- data2[,c(2:4, 6:8)]
+head(data2.species.trt)
+
+species.trt.stan <- map2stan(alist(
+  hyp~dnorm(mu,sigma),
+   mu <- a + bT*trt2 + bChil*S_chilense + bHab*S_habrochaites + bPen*S_pennellii + bPer*S_peruvianum,
+a~dnorm(33, 10),
+  c(bT, bChil, bChmi, bHab, bPen, bPer) ~ dnorm(0,10),
+  sigma~dunif(0,10)),
+  data2.species.trt,
+  chains=4)
+
+#compare the models!
+compare(hyp.stan, hyp.stan.spec, hyp.stan.nochm, species.trt.stan)
+
+#best one has species AND treatment -- best model by a lot!
+#because: difference in WAIC criteria is quite high (82 or 113) and much larger than SE of difference (17 or 23)
+#and because: ALL of weight given to best model
+plot(compare(hyp.stan, hyp.stan.spec, hyp.stan.nochm, species.trt.stan))
+#WAIC: deviance when it predicts out-of-sample
+
+#can also compare coefficients
+coeftab(hyp.stan, hyp.stan.spec, hyp.stan.nochm, species.trt.stan)
+#surprisingly, estimate of treatment effect ~ unchanged if including species
+
+#look at posterior distribution of treatment
+post.bT <- extract.samples(species.trt.stan)$bT
+dens(post.bT, show.HPDI=0.95)
+#does not intersect 0! so treatment effect nonzero
+#NONE Of the 4k samples have a model with treatment effect less than or equal to zero
+sum(post.bT <= 0) / length(post.bT)
+#so, strong evidence for "low IR" treatment having a positive effect on hypocotyl length
+```

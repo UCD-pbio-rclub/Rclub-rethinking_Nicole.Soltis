@@ -11,6 +11,7 @@ output:
 setwd("~/Projects/git.repos/Rclub-rethinking_Nicole.Soltis/Assignment_Chapter_09/data")
 library(rethinking)
 mydata <- read.csv('TomatoR2CSHL.csv')
+
 names(mydata)
 #model with trt only
 
@@ -27,8 +28,12 @@ m9.trt <- map2stan(
                   ) ,
                   data=mydata.t , chains=2 , iter=4000 , warmup=1000 )
 
+#can't just do this, map2stan will misinterpret meaning of species levels
 mydata$species <- as.numeric(mydata$species)
-mydata.s <- mydata[,c("hyp", "species")]
+#instead: split out species column
+#data2 <- dcast(mydata, index + hyp + trt ~ species, value.var = "species", fun.aggregate = length)
+head(data2)
+data2.s <- mydata[,c("hyp", "species")]
 m9.spec <- map2stan(
                   alist(
                    hyp ~ dnorm( mu , sigma ) ,
@@ -37,7 +42,7 @@ m9.spec <- map2stan(
                     bS ~ dnorm ( 0, 10 ),
                     sigma ~ dcauchy( 0 , 1 )
                   ) ,
-                  data=mydata.s , chains=2 , iter=4000 , warmup=1000 )
+                  data=data2.s , chains=2 , iter=4000 , warmup=1000 )
 
 mydata.st <- mydata[,c("hyp", "species", "trt")]
 m9.s.t <- map2stan(
