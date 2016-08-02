@@ -298,7 +298,9 @@ start=list(a=0,b=0),
 iter=1e4, warmup=100 , WAIC=FALSE )
 precis(mp)
 ```
-For a the mean is 0 and the SD ~ 1. b has a wide SD, which I'd expect for cauchy. So really this is just looking at the posteriors given each type of prior, irrelevant of the data.
+For a the mean is 0 and the SD ~ 1. b has a wide SD, which I'd expect for cauchy. So really this is just looking at the posteriors given each type of prior, irrelevant of the data. Trace of cauchy mean changes greatly each time- consistent with large tails. & density plot sharply centered around zeros, with very long tails.
+
+Data is not being used for the distributions: there is no model with y in it. 
 
 #8H2
 Recall the divorce rate example from Chapter 5. Repeat that analysis, using map2stan this time, fitting models m5.1, m5.2, and m5.3. Use compare to compare the models on the basis of WAIC. Explain the results.
@@ -312,6 +314,38 @@ sd(d$MedianAgeMarriage)
 names(d)
 d$MedianAgeMarriageS <- d$MedianAgeMarriage.s
 d <- d[, c("MedianAgeMarriageS", "Marriage")]
+
+#from Julin's
+m5.1.stan <- map2stan(
+  alist(
+    Divorce ~ dnorm( mu , sigma ) ,
+    mu <- a + bA * MedianAgeMarriageS ,
+    a ~ dnorm( 10 , 10 ) ,
+    bA ~ dnorm( 0 , 1 ) ,
+    sigma ~ dunif( 0 , 10 )
+  ) , data = d, chains=4 )
+
+m5.2.stan <- map2stan(
+  alist(
+    Divorce ~ dnorm( mu , sigma ) ,
+    mu <- a + bR * MarriageS ,
+    a ~ dnorm( 10 , 10 ) ,
+    bR ~ dnorm( 0 , 1 ) ,
+    sigma ~ dunif( 0 , 10 )
+  ) , data = d, chains=4 )
+
+m5.3.stan <- map2stan(
+  alist(
+    Divorce ~ dnorm( mu , sigma ) ,
+    mu <- a + bR*MarriageS + bA*MedianAgeMarriageS ,
+    a ~ dnorm( 10 , 10 ) ,
+    bR ~ dnorm( 0 , 1 ) ,
+    bA ~ dnorm( 0 , 1 ) ,
+    sigma ~ dunif( 0 , 10 )
+  ),
+  data = d,chains=4 )
+compare(m5.1.stan, m5.2.stan, m5.3.stan)
+  
 # fit model
 m8H2.5.1<- map2stan(
               alist(
@@ -347,5 +381,88 @@ m8H2.5.3<- map2stan(
               ) , 
               data = d, start=list(a=0, bA=0, sigma=1),
               chains = 4)
-#compare(m8H2.5.1, m8H2.5.2, m8H2.5.3)
+
+#without map2stan
+m5.1 <- map(
+alist(
+Divorce ~ dnorm( mu , sigma ) ,
+mu <- a + bA * MedianAgeMarriageS ,
+a ~ dnorm( 10 , 10 ) ,
+bA ~ dnorm( 0 , 1 ) ,
+sigma ~ dunif( 0 , 10 )
+) , data = d )
+m5.2 <- map(
+alist(
+Divorce ~ dnorm( mu , sigma ) ,
+mu <- a + bR * MarriageS ,
+a ~ dnorm( 10 , 10 ) ,
+bR ~ dnorm( 0 , 1 ) ,
+sigma ~ dunif( 0 , 10 )
+) , data = d )
+m5.3 <- map(
+alist(
+Divorce ~ dnorm( mu , sigma ) ,
+mu <- a + bR*MarriageS + bA*MedianAgeMarriageS ,
+a ~ dnorm( 10 , 10 ) ,
+bR ~ dnorm( 0 , 1 ) ,
+bA ~ dnorm( 0 , 1 ) ,
+sigma ~ dunif( 0 , 10 )
+) ,
+data = d )
+compare(m8H2.5.1, m8H2.5.2, m8H2.5.3)
 ```
+
+#8H3
+Sometimes changing a prior for one parameter has unanticipated effects on other parameters.
+This is because when a parameter is highly correlated with another parameter in the posterior, the
+prior influences both parameters. Here’s an example to work and think through.
+Go back to the leg length example in Chapter 5. Here is the code again, which simulates height
+and leg lengths for 100 imagined individuals:
+```{r}
+N <- 100 # number of individuals
+height <- rnorm(N,10,2) # sim total height of each
+leg_prop <- runif(N,0.4,0.5) # leg as proportion of height
+leg_left <- leg_prop*height + # sim left leg as proportion + error
+rnorm( N , 0 , 0.02 )
+leg_right <- leg_prop*height + # sim right leg as proportion + error
+rnorm( N , 0 , 0.02 )
+# combine into data frame
+d <- data.frame(height,leg_left,leg_right)
+
+#fit the model using map2stan
+m5.8s <- map2stan(
+alist(
+height ~ dnorm( mu , sigma ) ,
+mu <- a + bl*leg_left + br*leg_right ,
+a ~ dnorm( 10 , 100 ) ,
+bl ~ dnorm( 2 , 10 ) ,
+br ~ dnorm( 2 , 10 ) ,
+sigma ~ dcauchy( 0 , 1 )
+) ,
+data=d, chains=4,
+start=list(a=10,bl=0,br=0,sigma=1) )
+
+#Compare the posterior distribution produced by the code above to the posterior distribution produced when you change the prior for br so that it is strictly positive:
+m5.8s2 <- map2stan(
+alist(
+height ~ dnorm( mu , sigma ) ,
+mu <- a + bl*leg_left + br*leg_right ,
+a ~ dnorm( 10 , 100 ) ,
+bl ~ dnorm( 2 , 10 ) ,
+br ~ dnorm( 2 , 10 ) & T[0,] ,
+sigma ~ dcauchy( 0 , 1 )
+) ,
+data=d, chains=4,
+start=list(a=10,bl=0,br=0,sigma=1) )
+plot(precis(m5.8s2))
+```
+
+#8H4
+For the two models fit in the previous problem, use DIC or WAIC to compare the effective numbers of parameters for each model. Which model has more effective parameters? Why?
+
+#8H5
+Modify the Metropolis algorithm code from the chapter to handle the case that the island populations have a different distribution than the island labels. This means the island’s number will not be the same as its population.
+
+#8H6
+Modify the Metropolis algorithm code from the chapter to write your own simple MCMC estimator for globe tossing data and model from Chapter 2
+

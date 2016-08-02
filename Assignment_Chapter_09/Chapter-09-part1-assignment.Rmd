@@ -1,0 +1,61 @@
+---
+title: "Chapter-09-part1-assignment"
+author: "Nicole E Soltis"
+date: "August 2, 2016"
+output: html_document
+  keep_md: yes
+---
+
+```{r}
+library(rethinking)
+mydata <- read.csv('TomatoR2CSHL.csv')
+names(mydata)
+#model with trt only
+
+mean(mydata$hyp)
+mydata$trt <- as.numeric(mydata$trt)
+mydata.t <- mydata[,c("hyp", "trt")]
+m9.trt <- map2stan(
+                  alist(
+                   hyp ~ dnorm( mu , sigma ) ,
+                    mu <- alpha + bT * trt,
+                    alpha ~ dnorm( 33 , 10 ) ,
+                    bT ~ dnorm ( 0, 10 ),
+                    sigma ~ dcauchy( 0 , 1 )
+                  ) ,
+                  data=mydata.t , chains=2 , iter=4000 , warmup=1000 )
+
+mydata$species <- as.numeric(mydata$species)
+mydata.s <- mydata[,c("hyp", "species")]
+m9.spec <- map2stan(
+                  alist(
+                   hyp ~ dnorm( mu , sigma ) ,
+                    mu <- alpha + bS * species,
+                    alpha ~ dnorm( 33 , 10 ) ,
+                    bS ~ dnorm ( 0, 10 ),
+                    sigma ~ dcauchy( 0 , 1 )
+                  ) ,
+                  data=mydata.s , chains=2 , iter=4000 , warmup=1000 )
+
+mydata.st <- mydata[,c("hyp", "species", "trt")]
+m9.s.t <- map2stan(
+                  alist(
+                   hyp ~ dnorm( mu , sigma ) ,
+                    mu <- alpha + bS * species + bT * trt,
+                    alpha ~ dnorm( 33 , 10 ) ,
+                    bS ~ dnorm ( 0, 10 ),
+                    bT ~ dnorm ( 0, 10 ),
+                    sigma ~ dcauchy( 0 , 1 )
+                  ) ,
+                  data=mydata.st , chains=2 , iter=4000 , warmup=1000 )
+
+compare(m9.spec, m9.trt, m9.s.t)
+
+precis(m9.trt)
+```
+
+Does the best model include species, trt, or both?
+The best model appears to include both terms.
+
+Does trt have an effect on hypocotyl length?
+The fact that the best model includes trt suggests that it does effect hypocotyl length! Also the 0.89 CI does not intersect 0, so that is also a good sign that trt has a non-zero effect on hyp.
