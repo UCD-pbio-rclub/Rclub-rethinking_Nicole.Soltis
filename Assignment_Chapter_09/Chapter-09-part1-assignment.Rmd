@@ -2,8 +2,9 @@
 title: "Chapter-09-part1-assignment"
 author: "Nicole E Soltis"
 date: "August 2, 2016"
-output: html_document
-  keep_md: yes
+output: 
+  html_document:
+    keep_md: yes
 ---
 
 ```{r}
