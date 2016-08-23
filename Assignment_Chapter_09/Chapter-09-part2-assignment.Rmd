@@ -1,0 +1,122 @@
+---
+title: "Chapter-09-part2-assignment"
+author: "Nicole E Soltis"
+date: "August 23, 2016"
+output: 
+  html_document:
+    keep_md: yes
+---
+
+```{r}
+remove(list=ls())
+setwd("~/Projects/git.repos/Rclub-rethinking_Nicole.Soltis/Assignment_Chapter_09/data")
+library(rethinking)
+library(ggplot2)
+library(reshape2)
+mydata <- read.csv('TomatoR2CSHL.csv')
+
+names(mydata)
+mydata$trt2 <- as.numeric(mydata$trt)
+levels(mydata$trt)
+unique(mydata$trt2)
+#by default, sets H=1, L=2 so subtract 1 from each to make it easier to interpret
+mydata$trt2 <- as.numeric(mydata$trt)-1 #now H=0, L=1
+
+#can transform the data to make it more normally distributed: 
+#based on the density plots, looks normal *enough*
+#but to check transformation graphically anyway:
+plot1 <- ggplot(data=mydata, aes(x=sqrt(hyp), fill=trt)) + 
+  geom_density() + 
+  facet_grid(species ~ trt)
+plot1 
+
+#test for normality statistically:
+#first split by species and by treatment
+by(mydata$hyp, list(mydata$trt, mydata$species), shapiro.test)
+#so: L S. hab, L S. penn, H S. per, L S. per are normal
+#other 6 are not
+
+#try with the transformed data
+by(sqrt(mydata$hyp), list(mydata$trt, mydata$species), shapiro.test)
+#now all but H S. chm, H S. hab are normally distributed
+
+#so now we'll add a transformed variable
+mydata$hyp_t <- sqrt(mydata$hyp)
+
+# prepare species variable as numeric
+#can go one species per column
+mydata$Schilense <- ifelse(mydata$species=="S. chilense", 1, 0)
+#doing as.numeric is problematic, because map2stan will assume that species 5 is 5x speciies 1, etc.
+#Julin's approach
+#this goes long to wide
+mydata$index <- 1:nrow(mydata)
+#sort of silly to ask "length" because it's always only one row with a given index/ hyp/ trt combination... but it works to give you 0/1
+#also MUST include index, because some hyp:trt combinations were recorded more than once
+#in some cases the hypocotyl measurement is identical by chance, so by default dcast would smush the observations into a single cell!
+data2 <- dcast(mydata, index + hyp + hyp_t + trt2 ~ species, value.var = "species", fun.aggregate = length)
+head(data2)
+colnames(data2) <- sub(". ", "_", colnames(data2))
+
+#finally, model with species and trt
+#S. chmielewskii could be the intercept (reference), so can omit this
+data2.species.trt <- data2[,c(2, 4:9)]
+head(data2.species.trt)
+
+species.trt.stan <- map2stan(alist(
+  hyp~dnorm(mu,sigma),
+   mu <- a + bT*trt2 + bChil*S_chilense + bChmi*S_chmielewskii + bHab*S_habrochaites + bPen*S_pennellii + bPer*S_peruvianum,
+a~dnorm(33, 10),
+  c(bT, bChil, bChmi, bHab, bPen, bPer) ~ dnorm(0,10),
+  sigma~dunif(0,10)),
+  data2.species.trt,
+  chains=4)
+
+#model with transformed treatment
+names(data2)
+data2.species.trt.t <- data2[,c(3, 4:9)]
+head(data2.species.trt.t)
+mean(data2.species.trt.t$hyp_t)
+
+species.trt.t.stan <- map2stan(alist(
+  hyp_t~dnorm(mu,sigma),
+   mu <- a + bT*trt2 + bChil*S_chilense + bChmi*S_chmielewskii + bHab*S_habrochaites + bPen*S_pennellii + bPer*S_peruvianum,
+  #intercept square root of 33 ish
+a~dnorm(6, 10),
+  c(bT, bChil, bChmi, bHab, bPen, bPer) ~ dnorm(0,10),
+  sigma~dunif(0,10)),
+  data2.species.trt.t,
+  chains=4)
+
+postdata2.t <- extract.samples(species.trt.t.stan)
+plot(postdata2.t, type="l")
+
+
+
+#compare the models!
+#can't use WAIC: WAIC depends on the observation values
+#if you transform data and re-run, WAIC will change
+compare(species.trt.stan, species.trt.t.stan)
+
+plot(compare(species.trt.stan, species.trt.t.stan))
+#WAIC: deviance when it predicts out-of-sample
+
+#can also compare coefficients
+coeftab(species.trt.stan, species.trt.t.stan)
+plot(coeftab(species.trt.stan, species.trt.t.stan))
+
+#finally, model with interaction terms
+data2.species.trt <- data2[,c(2, 4:9)]
+head(data2.species.trt)
+
+species.trt.stan <- map2stan(alist(
+  hyp~dnorm(mu,sigma),
+   mu <- a + bT*trt2 + bChil*S_chilense + bChmi*S_chmielewskii + bHab*S_habrochaites + bPen*S_pennellii + bPer*S_peruvianum,
+a~dnorm(33, 10),
+  c(bT, bChil, bChmi, bHab, bPen, bPer) ~ dnorm(0,10),
+  sigma~dunif(0,10)),
+  data2.species.trt,
+  chains=4)
+
+#rather than transforming data, can use a different likelihood function (change the model)
+
+```
